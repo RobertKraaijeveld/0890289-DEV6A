@@ -4,3 +4,9 @@ E:\Hogeschool\Development\Algorithms Semester\SortingAlgos\SortingAlgos\bin\Debu
 E:\Hogeschool\Development\Algorithms Semester\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.csprojResolveAssemblyReference.cache
 E:\Hogeschool\Development\Algorithms Semester\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.exe
 E:\Hogeschool\Development\Algorithms Semester\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.pdb
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\bin\Debug\SortingAlgos.exe.config
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.exe
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.pdb
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\bin\Debug\SortingAlgos.exe
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\bin\Debug\SortingAlgos.pdb
+E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\SortingAlgos\SortingAlgos\obj\Debug\SortingAlgos.csprojResolveAssemblyReference.cache
