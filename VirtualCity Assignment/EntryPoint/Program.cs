@@ -51,7 +51,7 @@ namespace EntryPoint
     (Vector2 house, IEnumerable<Vector2>buildings, 
     int bLeft, int bRight)
     {
-        //I dont have to do any tricking converting to ints, because mergeSort() takes element POSITIONS rather than VALUES.
+        //I dont have to do any tricky converting to ints-business, because mergeSort() takes element POSITIONS rather than VALUES.
         //Makes sense, since we are comparing positions rather than values.
         if (bLeft > bRight)
         {
@@ -70,43 +70,59 @@ namespace EntryPoint
     (Vector2 house, IEnumerable<Vector2> buildings,
     int bLeft, int bMiddle, int bRight)
     {
+        Vector2[] buildingsArray = buildings.ToArray();
         //Set ends of halfs, like usual
         int n1 = bMiddle - bLeft + 1;
         int n2 = bRight - bMiddle;
-        //NOW, for the real work, treating IEnumberables as arrays... righhhttt...
-        //Oh boy, look at the time!
-    }
-
-    /*
-    static void merge(int[] array, int l, int m, int r)
-    {
-        //This number represents the end of the left half.
-        int n1 = m - l + 1;
-        //This number represents the end of the right half.
-        int n2 = r - m;
-        //We create a new array, the size of n1 + 1
-        int[] leftpart = new int[n1 + 1];
-        //We create a new array, the size of n2 + 1
-        int[] rightpart = new int[n2 + 1];
+        //I can use the .getEnumerator call on an array, so i just use arrays here and make them IENumerable later!
+        Vector2[] leftpart = new Vector2[n1 + 1];
+        Vector2[] rightpart = new Vector2[n2 + 1];
         //We loop through the left half.
         for (int i = 0; i < n1; i++)
         {
-            //We put all of the left hand side elements of the original parameter-array into our new leftArray, 
-            //stopping at the end of n1(which is equal to the middle of the param-array)
-            leftpart[i] = array[l + i];
+            //We put all of the left hand side  Vector 2elements of the original parameter-array into our new leftArray, 
+            //stopping at the end of our iterator n1(which is equal to the middle of the param-array)
+            leftpart[i] = buildingsArray[bLeft + i];
         }
-        //We loop through the right half.
+
+        //And we fill the right half in the not-so-exact same way.
         for (int j = 0; j < n2; j++)
         {
-            //We fill the new rightarray with the right half of our param array, just like we did earlier.
-            rightpart[j] = array[m + j + 1];
+            leftpart[j] = buildingsArray[bMiddle + j + 1];
         }
-        //We fill the last element of the array with the maximum value a normal 32 bit Integer can take, 2147483648, 
-        //in case our array only has one element the last element always needs to be the bigger one in order for the array to be considered sorted; 
-        //nothing can be bigger than Int32.MaxValue (as far as 32-bits ints are concerned!)
-        leftpart[n1] = Int32.MaxValue;
-        rightpart[n2] = Int32.MaxValue;
-
+        //Now for something more complicated than the original merge: Setting the last element of left and right to something VERY high.
+        leftpart[n1] = new Vector2(Int32.MaxValue, Int32.MaxValue);
+        rightpart[n2] = new Vector2(Int32.MaxValue, Int32.MaxValue);
+        //placeholders for the first values of leftpart and rightpart. Standard procedure. 
+        int i2 = 0;
+        int j2 = 0;
+        //We (I, actually) loop through the entire array of Vector2
+        for (int k = bLeft; k <= bRight; k++)
+        {
+            //No ordinary check of size, but check of the result of distance()!
+            //And I can simply reference the buildingsArray of Vector2.
+            if (leftpart[i2].Distance(leftpart[i2], buildingsArray[i2]) <= rightpart[j2])
+            {
+                //The element in param-array that we are currently iterating on is set to the first element of leftArray.
+                //We do this to make sure the array is sorted from small to larger; leftArray[i2] turned out to be smaller than rightArray[j2], so we set array[k] to that (smaller) value and loop again.
+                buildingsArray[k] = leftpart[i2];
+                //i2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
+                i2++;
+            }
+            //If the value of the first element of the leftarray is bigger than or equal to the value of the first element of the left array:
+            else
+            {
+                //The element in param-array that we are currently iterating on is set to the first element of rightArray.
+                //We do this to make sure the array is sorted from small to larger; rightArray[j2] turned out to be smaller than leftArray[i2], so we set array[k] to that (smaller) value and loop again.
+                array[k] = rightpart[j2];
+                //j2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
+                j2++;
+            }
+        }
+    }
+    /*
+    static void merge(int[] array, int l, int m, int r)
+    {
         //We create placeholders for the (now) first elements of our left- and rightarrays. I declared them as i2 and j2 because i and j are already declared
         //in the child scope of the 2 previous for-loops.
         int i2 = 0;
