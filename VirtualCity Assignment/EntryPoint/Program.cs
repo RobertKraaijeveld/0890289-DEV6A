@@ -47,7 +47,7 @@ namespace EntryPoint
 
     //Has to return IEnumerable of Vector2. OR DOES IT
     //Sort specialbuildings by their distance to the house, ascending from small to large. -> How? Vector2.Distance(house, sb), which returns a float!
-    private static void mergeSort
+    private static IEnumerable<Vector2> mergeSort
     (Vector2 house, IEnumerable<Vector2>buildings, 
     int bLeft, int bRight)
     {
@@ -62,11 +62,12 @@ namespace EntryPoint
             mergeSort(house, buildings, bLeft, bMiddle);
             //Right half and merge!
             mergeSort(house, buildings, bMiddle + 1, bRight);
-            merge(house, buildings, bLeft, bMiddle, bRight);
+            return merge(house, buildings, bLeft, bMiddle, bRight);
         }
+        return null;
     }
 
-    private static void merge
+    private static IEnumerable<Vector2> merge
     (Vector2 house, IEnumerable<Vector2> buildings,
     int bLeft, int bMiddle, int bRight)
     {
@@ -96,12 +97,13 @@ namespace EntryPoint
         //placeholders for the first values of leftpart and rightpart. Standard procedure. 
         int i2 = 0;
         int j2 = 0;
+
         //We (I, actually) loop through the entire array of Vector2
         for (int k = bLeft; k <= bRight; k++)
         {
             //No ordinary check of size, but check of the result of distance()!
-            //And I can simply reference the buildingsArray of Vector2.
-            if (leftpart[i2].Distance(leftpart[i2], buildingsArray[i2]) <= rightpart[j2])
+            //And I can simply reference the buildingsArray of Vector2. Also, Distance is a static method so we call it on the Vector2 class rather than an instance of Vector2.
+            if (Vector2.Distance(leftpart[i2], buildingsArray[i2]) <= Vector2.Distance(rightpart[j2], buildingsArray[i2]))
             {
                 //The element in param-array that we are currently iterating on is set to the first element of leftArray.
                 //We do this to make sure the array is sorted from small to larger; leftArray[i2] turned out to be smaller than rightArray[j2], so we set array[k] to that (smaller) value and loop again.
@@ -114,11 +116,13 @@ namespace EntryPoint
             {
                 //The element in param-array that we are currently iterating on is set to the first element of rightArray.
                 //We do this to make sure the array is sorted from small to larger; rightArray[j2] turned out to be smaller than leftArray[i2], so we set array[k] to that (smaller) value and loop again.
-                array[k] = rightpart[j2];
+                buildingsArray[k] = rightpart[j2];
                 //j2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
                 j2++;
             }
         }
+        //Last but not least, convert our buildingsArray back to the IEnumerable<Vector2> it once was!
+        return buildingsArray.AsEnumerable();
     }
     /*
     static void merge(int[] array, int l, int m, int r)
@@ -154,7 +158,9 @@ namespace EntryPoint
 
     private static IEnumerable<Vector2> SortSpecialBuildingsByDistance(Vector2 house, IEnumerable<Vector2> specialBuildings)
     {
-      //return mergeSort(house, buildings, 
+      //int bLeft, int bRight
+      Vector2[] b = specialBuildings.ToArray();
+      return mergeSort(house, specialBuildings, 0, b.Length - 1);
     }
 
     private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
