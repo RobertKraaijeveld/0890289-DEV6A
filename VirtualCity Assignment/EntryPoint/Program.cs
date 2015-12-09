@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,123 +44,117 @@ namespace EntryPoint
      * ROBERT KRAAIJEVELD (0890289@hr.nl) INF2C: 30-11-15 A.D
      * --------------------------------------------------
      */ 
+		public static void MergeSort(float[] listToSort, int begin, int end)
+		{
+			if (begin < end)
+			{
+				int mid = (end + begin) / 2;
+				MergeSort(listToSort, begin, mid);
+				MergeSort(listToSort, mid + 1, end);
+				Merge(listToSort, begin, end, mid);
+			}
+		}
 
-    //Has to return IEnumerable of Vector2. OR DOES IT
-    //Sort specialbuildings by their distance to the house, ascending from small to large. -> How? Vector2.Distance(house, sb), which returns a float!
-    private static IEnumerable<Vector2> mergeSort
-    (Vector2 house, IEnumerable<Vector2>buildings, 
-    int bLeft, int bRight)
-    {
-        //I dont have to do any tricky converting to ints-business, because mergeSort() takes element POSITIONS rather than VALUES.
-        //Makes sense, since we are comparing positions rather than values.
-        if (bLeft > bRight)
-        {
-            //Knowing this, we run through the method like we always do.
-            int bMiddle = (bLeft + bRight) / 2;
-            //One exception being that we pass an extra parameter. This parameter is used later in merge() 
-            //Left half
-            mergeSort(house, buildings, bLeft, bMiddle);
-            //Right half and merge!
-            mergeSort(house, buildings, bMiddle + 1, bRight);
-            return merge(house, buildings, bLeft, bMiddle, bRight);
-        }
-        return null;
-    }
+		public static void Merge(float[] arrayToMerge, int begin, int end, int mid)
+		{
+			//Define end of both halves of the originalArray
+			int half1 = mid - begin + 1;
+			//Notice half1 gets a +1; This is because we have to appoint an actual element as middle, 
+			//we cant just draw a line in space.
+			int half2 = end - mid;
 
-    private static IEnumerable<Vector2> merge
-    (Vector2 house, IEnumerable<Vector2> buildings,
-    int bLeft, int bMiddle, int bRight)
-    {
-        Vector2[] buildingsArray = buildings.ToArray();
-        //Set ends of halfs, like usual
-        int n1 = bMiddle - bLeft + 1;
-        int n2 = bRight - bMiddle;
-        //I can use the .getEnumerator call on an array, so i just use arrays here and make them IENumerable later!
-        Vector2[] leftpart = new Vector2[n1 + 1];
-        Vector2[] rightpart = new Vector2[n2 + 1];
-        //We loop through the left half.
-        for (int i = 0; i < n1; i++)
-        {
-            //We put all of the left hand side  Vector 2elements of the original parameter-array into our new leftArray, 
-            //stopping at the end of our iterator n1(which is equal to the middle of the param-array)
-            leftpart[i] = buildingsArray[bLeft + i];
-        }
+			//Create an array for each half of the original array
+			float[] arrayLeft = new float[half1 + 1];
+			float[] arrayRight = new float[half2 + 1];
 
-        //And we fill the right half in the not-so-exact same way.
-        for (int j = 0; j < n2; j++)
-        {
-            leftpart[j] = buildingsArray[bMiddle + j + 1];
-        }
-        //Now for something more complicated than the original merge: Setting the last element of left and right to something VERY high.
-        leftpart[n1] = new Vector2(Int32.MaxValue, Int32.MaxValue);
-        rightpart[n2] = new Vector2(Int32.MaxValue, Int32.MaxValue);
-        //placeholders for the first values of leftpart and rightpart. Standard procedure. 
-        int i2 = 0;
-        int j2 = 0;
+			//Fill both halves with the values of original array until their half ends.
+			for (int i = 0; i < half1; i++)
+			{
+				arrayLeft[i] = arrayToMerge[begin + i];
+			}
+			//Again, +1 here because Left gets the actual middle element; arrayRight thusly has to start one element later.
+			for (int i = 0; i < half2; i++)
+			{
+				arrayRight[i] = arrayToMerge[mid + i + 1];
+			}
 
-        //We (I, actually) loop through the entire array of Vector2
-        for (int k = bLeft; k <= bRight; k++)
-        {
-            //No ordinary check of size, but check of the result of distance()!
-            //And I can simply reference the buildingsArray of Vector2. Also, Distance is a static method so we call it on the Vector2 class rather than an instance of Vector2.
-            if (Vector2.Distance(leftpart[i2], buildingsArray[i2]) <= Vector2.Distance(rightpart[j2], buildingsArray[i2]))
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of leftArray.
-                //We do this to make sure the array is sorted from small to larger; leftArray[i2] turned out to be smaller than rightArray[j2], so we set array[k] to that (smaller) value and loop again.
-                buildingsArray[k] = leftpart[i2];
-                //i2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                i2++;
-            }
-            //If the value of the first element of the leftarray is bigger than or equal to the value of the first element of the left array:
-            else
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of rightArray.
-                //We do this to make sure the array is sorted from small to larger; rightArray[j2] turned out to be smaller than leftArray[i2], so we set array[k] to that (smaller) value and loop again.
-                buildingsArray[k] = rightpart[j2];
-                //j2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                j2++;
-            }
-        }
-        //Last but not least, convert our buildingsArray back to the IEnumerable<Vector2> it once was!
-        return buildingsArray.AsEnumerable();
-    }
-    /*
-    static void merge(int[] array, int l, int m, int r)
-    {
-        //We create placeholders for the (now) first elements of our left- and rightarrays. I declared them as i2 and j2 because i and j are already declared
-        //in the child scope of the 2 previous for-loops.
-        int i2 = 0;
-        int j2 = 0;
-        //We loop through the length of the entire original array.
-        for (int k = l; k <= r; k++)
-        {
-            //If the value of the first element of the rightarray is bigger than or equal to the value of the first element of the left array:
-            if (leftpart[i2] <= rightpart[j2])
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of leftArray.
-                //We do this to make sure the array is sorted from small to larger; leftArray[i2] turned out to be smaller than rightArray[j2], so we set array[k] to that (smaller) value and loop again.
-                array[k] = leftpart[i2];
-                //i2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                i2++;
-            }
-            //If the value of the first element of the leftarray is bigger than or equal to the value of the first element of the left array:
-            else
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of rightArray.
-                //We do this to make sure the array is sorted from small to larger; rightArray[j2] turned out to be smaller than leftArray[i2], so we set array[k] to that (smaller) value and loop again.
-                array[k] = rightpart[j2];
-                //j2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                j2++;
-            }
-        }
-    }
-     */
+			//We set the very last element in the arrays to infinity, so that when (not if, when) we end up with a 1 element-array,
+			//We make sure the left element is always smaller and the array is therefore considered sorted.
+			arrayLeft[half1] = float.MaxValue;
+			arrayRight[half2] = float.MaxValue;
 
+		    //Define indexes that we will be using in the later loop
+			int leftIndex = 0;
+			int rightIndex = 0;
+
+			//Loop the entire length of the original array
+			for (int i = begin; i <= end; i++)
+			{
+				//we check if the element in the left array is smaller or equal to the element in the right array.
+				if (arrayLeft[leftIndex] <= arrayRight[rightIndex])
+				{
+					//If so, originalArray[i] gets set to that element because in order for the array to be sorted properly,
+					//The smaller elements go on the lefthand-side
+					arrayToMerge[i] = arrayLeft[leftIndex];
+					//We increment the leftIndex so we dont look at the same element twice; We go to the next element instead.
+					leftIndex++;
+				}
+				else
+				{
+					//Same goes if the right value turns out to be smaller than the left value.
+					arrayToMerge[i] = arrayRight[rightIndex];
+					rightIndex++;
+				}
+			}
+		}
+
+    
     private static IEnumerable<Vector2> SortSpecialBuildingsByDistance(Vector2 house, IEnumerable<Vector2> specialBuildings)
     {
-      //int bLeft, int bRight
-      Vector2[] b = specialBuildings.ToArray();
-      return mergeSort(house, specialBuildings, 0, b.Length - 1);
+			//converting ienumerable to list
+			List<Vector2> SpecialBuildingsList = specialBuildings.ToList();
+
+			//Creating 2 floatarrays, the size of the SpecialBuildingsList. (We are not going to have more distances than the amount of buildings)
+			float[] SortedDistances = new float[SpecialBuildingsList.Count];
+			float[] UnsortedDistances = new float[SpecialBuildingsList.Count];
+
+			//Fill Both arrays with the distance between the house vector and the iterated specialBuilding
+			for (int i = 0; i < SpecialBuildingsList.Count; i++)
+			{
+				SortedDistances[i] = Vector2.Distance(house, SpecialBuildingsList.ElementAt(i));
+				UnsortedDistances[i] =  Vector2.Distance(house, SpecialBuildingsList.ElementAt(i));
+			}
+
+			//Sort the values of 1 of the Arrays; SortedDistances.
+			MergeSort(SortedDistances, 0, SortedDistances.Length - 1);
+
+			//This array is going to contain our final vectors, sorted by their distance to the house :)
+			List<Vector2> finalListOfVectors = new List<Vector2>();
+
+			//We loop through both distance-arrays.
+			for (int i = 0; i < SortedDistances.Count(); i++)
+			{
+				for (int j = 0; j < UnsortedDistances.Count(); j++)
+				{
+					//Explanation below.
+					if (SortedDistances[i] == UnsortedDistances[j])
+					{
+						//Here comes the interesting part. 
+						//Remember: i stands for right place, j stands for right building.
+						//At the place in the finalArray where the building is supposed to go if we want it ordered by distance,
+						//We insert the building that is at that spot in the unsorted, unchanged array, so we know we have the right building for the right, sorted position.
+						//As I like to say: Position i, building j!
+						finalListOfVectors.Insert(i, SpecialBuildingsList.ElementAt(j));
+						//We sorta "delete" the building J we just looked at, so we don get doubles.
+						UnsortedDistances[j] = 0;
+					}
+				}
+			}
+			//we make a ienumerable of vectors that are sorted 
+			IEnumerable<Vector2> sortedBuildings = finalListOfVectors as IEnumerable<Vector2>;
+
+			//we return the list
+			return sortedBuildings;
     }
 
     private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
