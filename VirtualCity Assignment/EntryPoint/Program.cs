@@ -67,7 +67,7 @@ namespace EntryPoint
 			float[] arrayLeft = new float[half1 + 1];
 			float[] arrayRight = new float[half2 + 1];
 
-<<<<<<< HEAD
+
 			//Fill both halves with the values of original array until their half ends.
 			for (int i = 0; i < half1; i++)
 			{
@@ -143,7 +143,7 @@ namespace EntryPoint
 						//Here comes the interesting part. 
 						//Remember: i stands for right place, j stands for right building.
 						//At the place in the finalArray where the building is supposed to go if we want it ordered by distance,
-						//We insert the building that is at that spot in the unsorted, unchanged array, so we know we have the right building for the right, sorted position.
+						//We insert the building that is at that spot in the unsorted, unchanged array, so we know we have the right building 							for the right, sorted position.
 						//As I like to say: Position i, building j!
 						finalListOfVectors.Insert(i, SpecialBuildingsList.ElementAt(j));
 						//We sorta "delete" the building J we just looked at, so we don get doubles.
@@ -156,51 +156,6 @@ namespace EntryPoint
 
 			//we return the list
 			return sortedBuildings;
-=======
-        //And we fill the right half in the not-so-exact same way.
-        for (int j = 0; j < n2; j++)
-        {
-            leftpart[j] = buildingsArray[bMiddle + j + 1];
-        }
-        //Now for something more complicated than the original merge: Setting the last element of left and right to something VERY high.
-        leftpart[n1] = new Vector2(Int32.MaxValue, Int32.MaxValue);
-        rightpart[n2] = new Vector2(Int32.MaxValue, Int32.MaxValue);
-        //placeholders for the first values of leftpart and rightpart. Standard procedure. 
-        int i2 = 0;
-        int j2 = 0;
-
-        //We (I, actually) loop through the entire array of Vector2
-        for (int k = bLeft; k <= bRight; k++)
-        {
-            //No ordinary check of size, but check of the result of distance()!
-            //And I can simply reference the buildingsArray of Vector2. Also, Distance is a static method so we call it on the Vector2 class rather than an instance of Vector2.
-            if (Vector2.Distance(leftpart[i2], house) <= Vector2.Distance(rightpart[j2], house))
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of leftArray.
-                //We do this to make sure the array is sorted from small to larger; leftArray[i2] turned out to be smaller than rightArray[j2], so we set array[k] to that (smaller) value and loop again.
-                buildingsArray[k] = leftpart[i2];
-                //i2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                i2++;
-            }
-            //If the value of the first element of the leftarray is bigger than or equal to the value of the first element of the left array:
-            else
-            {
-                //The element in param-array that we are currently iterating on is set to the first element of rightArray.
-                //We do this to make sure the array is sorted from small to larger; rightArray[j2] turned out to be smaller than leftArray[i2], so we set array[k] to that (smaller) value and loop again.
-                buildingsArray[k] = rightpart[j2];
-                //j2 is incremented, so in the next loop we will be looking at the second element of the leftarray versus the first element of the rightarray.
-                j2++;
-            }
-        }
-        //Last but not least, convert our buildingsArray back to the IEnumerable<Vector2> it once was!
-        return buildingsArray.AsEnumerable();
-    }
-    
-    private static IEnumerable<Vector2> SortSpecialBuildingsByDistance(Vector2 house, IEnumerable<Vector2> specialBuildings)
-    {
-      Vector2[] b = specialBuildings.ToArray();
-      return mergeSort(house, specialBuildings, 0, b.Length - 1);
->>>>>>> 786ed07ba5277eb08b89ed3adf256a4d3db26609
     }
 
     private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(

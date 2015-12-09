@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="EntryPoint/Program.cs">
     <Files>
-      <File FileName="Main/Perlin.fs" Line="20" Column="11" />
+      <File FileName="Main/Perlin.fs" Line="1" Column="1" />
       <File FileName="EntryPoint/Program.cs" Line="107" Column="6" />
     </Files>
   </MonoDevelop.Ide.Workbench>
