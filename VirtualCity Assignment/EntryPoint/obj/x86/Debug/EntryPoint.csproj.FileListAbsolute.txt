@@ -64,13 +64,4 @@ E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignme
 E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\Game.pdb
 E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\MonoGame.Framework.xml
 E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\FSharp.Core.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.MediaFoundation.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.XAudio2.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.Direct3D11.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.DXGI.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.Direct2D1.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.XInput.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.RawInput.xml
-E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\bin\Windows\Debug\SharpDX.Direct3D9.xml
 E:\Hogeschool\Development\Algorithms Semester\0890289-DEV6A\VirtualCity Assignment\EntryPoint\obj\x86\Debug\EntryPoint.csprojResolveAssemblyReference.cache
