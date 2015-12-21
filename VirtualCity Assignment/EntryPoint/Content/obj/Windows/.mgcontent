@@ -4,6 +4,6 @@
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
-    <File>E:/Hogeschool/Development/Algorithms Semester/0890289-DEV6A/VirtualCity Assignment/EntryPoint/Content/numberingFont.spritefont</File>
+    <File>/home/robert/Desktop/Hogeschool/Development/0890289-DEV6A/VirtualCity Assignment/EntryPoint/Content/numberingFont.spritefont</File>
   </SourceFiles>
 </SourceFileCollection>
