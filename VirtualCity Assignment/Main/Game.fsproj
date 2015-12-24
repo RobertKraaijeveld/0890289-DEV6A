@@ -62,13 +62,10 @@
     <Compile Include="Game.fs" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <Reference Include="MonoGame.Framework">
       <HintPath>..\packages\MonoGame.Framework.WindowsDX.3.4.0.459\lib\net40\MonoGame.Framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-=======
->>>>>>> 4e8f6bf78dceb0396d074cacbd86da2251580992
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />

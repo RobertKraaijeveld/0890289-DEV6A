@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Game", "Main\Game.fsproj", "{74D933DB-A600-4636-AEF5-5FB5B37832A5}"
@@ -48,7 +46,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
-=======
+
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
@@ -164,4 +162,3 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
->>>>>>> 4e8f6bf78dceb0396d074cacbd86da2251580992
