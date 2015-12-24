@@ -158,16 +158,146 @@ namespace EntryPoint
 			return sortedBuildings;
     }
 
+
+    /*
+    * TREES
+    */
+
+        /********************
+        * CLASS DEFINITIONS 
+        *********************/
+
+        interface MiniTree<T>
+        {
+            Boolean isEmpty();
+            T getValue();
+            MiniTree<T> getLeftMTree();
+            MiniTree<T> getRightMTree();
+            T getXValue();
+            T getYValue();
+        }
+
+        //since node and emptynode both inherit from the abstract interface minitree, they can both be used 
+        class Node<T> : MiniTree<T>
+        {
+            T Xvalue;
+            T Yvalue;
+            MiniTree<T> left;
+            MiniTree<T> right;
+
+            public Boolean isEmpty()
+            {
+                return false;
+            }
+
+            //getters
+            public T getXValue()
+            {
+                return Xvalue;
+            }
+
+            //getters
+            public T getYValue()
+            {
+                return Yvalue;
+            }
+
+            public MiniTree<T> getLeftMTree()
+            {
+                return left;
+            }
+
+            public MiniTree<T> getRightMTree()
+            {
+                return right;
+            }
+
+
+            //constructor
+            public Node(T xval, T yval, MiniTree<T> l, MiniTree<T> r)
+            {
+                Xvalue = xval;
+                Yvalue = yval;
+                left = l;
+                right = r;
+            }
+
+        }
+
+        //since node and emptynode both inherit from the abstract interface minitree, they can both be used 
+        class EmptyNode<T> : MiniTree<T>
+        {
+            MiniTree<T> left;
+            MiniTree<T> right;
+
+            public Boolean isEmpty()
+            {
+                return true;
+            }
+
+            //getters
+            public T getXValue()
+            {
+                throw new NotImplementedException();
+            }
+
+            public T getYValue()
+            {
+                throw new NotImplementedException();
+            }
+
+
+            public MiniTree<T> getLeftMTree()
+            {
+                throw new NotImplementedException();
+            }
+
+            public MiniTree<T> getRightMTree()
+            {
+                throw new NotImplementedException();
+            }
+            //(explicit) constructor is not specified in the interface contract and thusly not necessary
+            //same goes for setters
+        }
+
+    public static MiniTree<float> insertIntoKD(float valueX, float valueY, MiniTree<float> root)
+    {
+        bool sortOnX = true;
+        if(root.isEmpty() == false)
+        {
+            //its important that we always insert BOTH values, but sort on only one of them.
+            if(sortOnX == true)
+            {
+                if(valueX > root.getXValue())
+                {
+                    return new Node<float>(root.getXValue(), insertIntoKD(valueX, root.getLeftMTree()), root.getRightMTree());
+                }
+                else 
+                {
+                    return new Node<float>(root.getXValue(), root.getLeftMTree(), insertIntoKD(valueX, root.getRightMTree()));
+                }
+            }
+            else
+            {
+                if(valueY > root.getXValue())
+                {
+                    return new Node<float>(root.getYValue(), insertIntoKD(valueY, root.getLeftMTree()), root.getRightMTree());
+                }
+                else
+                {
+                    return new Node<float>(root.getYValue(), root.getLeftMTree(), insertIntoKD(valueY, root.getRightMTree()));
+                }
+            }
+        }
+        else
+            return root;
+    }
+
     private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
       IEnumerable<Vector2> specialBuildings, 
       IEnumerable<Tuple<Vector2, float>> housesAndDistances)
     {
-      return
-          from h in housesAndDistances
-          select
-            from s in specialBuildings
-            where Vector2.Distance(h.Item1, s) <= h.Item2
-            select s;
+        var Tree;
     }
 
     private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
