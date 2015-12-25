@@ -82,7 +82,7 @@
       <Project>{74D933DB-A600-4636-AEF5-5FB5B37832A5}</Project>
       <Name>Game</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\..\..\..\..\Downloads\MonoGame\MonoGame.Framework\MonoGame.Framework.Linux.csproj">
+    <ProjectReference Include="..\..\..\..\..\Downloads\MonoGame\MonoGame.Framework\MonoGame.Framework.Linux.csproj">
       <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
       <Name>MonoGame.Framework.Linux</Name>
     </ProjectReference>

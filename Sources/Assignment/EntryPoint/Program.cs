@@ -38,12 +38,20 @@ namespace EntryPoint
 		}
 
 		/*
-     * Student Stuff starts here. I made seperate mergeSort and merge methods, just like in the example. 
-     * I left all the comments I made to my own brain during coding, for educational- and comic relief-purposes.
+     * Student Stuff starts here.
      * --------------------------------------------------
      * ROBERT KRAAIJEVELD (0890289@hr.nl) INF2C: 30-11-15 A.D
      * --------------------------------------------------
      */ 
+
+
+
+	/* *************
+     * MERGESORT
+     * ************
+     */ 
+
+
 		public static void MergeSort(float[] listToSort, int begin, int end)
 		{
 			if (begin < end)
@@ -159,9 +167,9 @@ namespace EntryPoint
 		}
 
 
-		/*
-    * TREES
-    */
+		/********************
+		* TREES OF ALL SHAPES AND SIZES (not really though)
+		*********************/
 
 		/********************
 		* CLASS DEFINITIONS 
@@ -258,48 +266,132 @@ namespace EntryPoint
 			//(explicit) constructor is not specified in the interface contract and thusly not necessary
 			//same goes for setters
 		}
-		/*
-    static MiniTree<float> insertIntoKD(float valueX, float valueY, MiniTree<float> root)
-    {
-        bool sortOnX = true;
-        if(root.isEmpty() == false)
-        {
-            //its important that we always insert BOTH values, but sort on only one of them.
-            if(sortOnX == true)
-            {
-                if(valueX > root.getXValue())
-                {
-                    return new Node<float>(root.getXValue(), insertIntoKD(valueX, root.getLeftMTree()), root.getRightMTree());
-                }
-                else 
-                {
-                    return new Node<float>(root.getXValue(), root.getLeftMTree(), insertIntoKD(valueX, root.getRightMTree()));
-                }
-            }
-            else
-            {
-                if(valueY > root.getXValue())
-                {
-                    return new Node<float>(root.getYValue(), insertIntoKD(valueY, root.getLeftMTree()), root.getRightMTree());
-                }
-                else
-                {
-                    return new Node<float>(root.getYValue(), root.getLeftMTree(), insertIntoKD(valueY, root.getRightMTree()));
-                }
-            }
-        }
-        else
-            return root;
-    }
-    */
+
+
+		//Call this with nextLevelSortedOnX =true!
+	    static MiniTree<float> insertIntoKD(float[] XY, bool nextLevelSortedOnX, MiniTree<float> root)
+	    {
+			//If the root is empty we cant do squat.	
+	        if(root.isEmpty() == false)
+	        {
+	            //We are in a level that is sorted by X values.
+				if(nextLevelSortedOnX == true)
+	            {
+						//Node already present!
+						if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
+						{
+							Console.WriteLine("Node already there!");
+							return root;
+						}	
+						//Node to be inserted has bigger X value, so we look in the right tree.
+		                else if(XY[0] > root.getXValue())
+		                {
+							//TODO: ANDERE TREE MOET OOK INGEVULD WORDEN!
+							return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
+		                }
+						//Node to be inserted has smaller X value, so we look in the right tree.
+		                else 
+		                {
+							return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
+		                }
+	            }
+				//Next level sorted on Y
+	            else
+	            {
+						//Node already present!
+						if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
+						{
+							Console.WriteLine("Node already there!");
+							return root;
+						}	
+						//Node to be inserted has bigger Y value, so we look in the right tree.
+						else if(XY[1] > root.getYValue())
+						{
+							//TODO: ANDERE TREE MOET OOK INGEVULD WORDEN!
+							return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
+						}
+						//Node to be inserted has smaller Y value, so we look in the left tree.
+						else 
+						{
+							return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
+						}
+	            }
+	        }
+	        else
+	            return root;
+	    }
+    
+
+		static bool findNode(float[] XY, bool nextLevelSortedOnX, MiniTree<int> root)
+		{
+			//If the root is empty we cant do squat.	
+			if(root.isEmpty() == false)
+			{
+				//We are in a level that is sorted by X values.
+				if(nextLevelSortedOnX == true)
+				{
+					//Node found!
+					if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
+					{
+						Console.WriteLine("Node found!");
+						return true;
+					}	
+					//Node has bigger X value, so we look in the right tree.
+					else if(XY[0] > root.getXValue())
+					{
+						return findNode(XY, false, root.getRightMTree());
+					}
+					//Node has smaller X value, so we look in the right tree.
+					else 
+					{
+						return findNode(XY, false, root.getLeftMTree());
+					}
+				}
+				//Next level sorted on Y
+				else
+				{
+					//Node found!
+					if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
+					{
+						Console.WriteLine("Node already there!");
+						return true;
+					}	
+					//Node has bigger Y value, so we look in the right tree.
+					else if(XY[1] > root.getYValue())
+					{
+						return findNode(XY, true, root.getRightMTree());
+					}
+					//Node thas smaller Y value, so we look in the left tree.
+					else 
+					{
+						return findNode(XY, true, root.getLeftMTree());
+					}
+				}
+			}
+			else
+				return false;
+		}
 
 		private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
 			IEnumerable<Vector2> specialBuildings, 
 			IEnumerable<Tuple<Vector2, float>> housesAndDistances)
 		{
-			MiniTree<float> Tree;
+			MiniTree<float> Tree = new MiniTree<float>();
+			List<Vector2> listOfBuildings = specialBuildings.ToList();
+
+			foreach(Vector2 v in listOfBuildings)
+			{
+				float[] XnY = new float[]{ v.X, v.Y };
+				insertIntoKD(XnY, true, Tree);
+			}
 			return null;
 		}
+
+
+		/********************
+		* END OF TREES
+		*********************/
+
 
 		private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
 			Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
