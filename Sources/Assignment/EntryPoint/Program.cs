@@ -234,9 +234,6 @@ namespace EntryPoint
 		//since node and emptynode both inherit from the abstract interface minitree, they can both be used 
 		class EmptyNode<T> : MiniTree<T>
 		{
-			MiniTree<T> left;
-			MiniTree<T> right;
-
 			public Boolean isEmpty()
 			{
 				return true;
@@ -272,57 +269,59 @@ namespace EntryPoint
 	    static MiniTree<float> insertIntoKD(float[] XY, bool nextLevelSortedOnX, MiniTree<float> root)
 	    {
 			//If the root is empty we cant do squat.	
-	        if(root.isEmpty() == false)
-	        {
-	            //We are in a level that is sorted by X values.
-				if(nextLevelSortedOnX == true)
-	            {
-						//Node already present!
-						if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
-						{
-							Console.WriteLine("Node already there!");
-							return root;
-						}	
+			if (root.isEmpty() == false)
+			{
+				//We are in a level that is sorted by X values.
+				if (nextLevelSortedOnX == true) 
+				{
+					//Node already present!
+					if (XY [0] == root.getXValue () && XY [1] == root.getYValue ()) 
+					{
+						Console.WriteLine ("Node already there!");
+						return root;
+					}	
 						//Node to be inserted has bigger X value, so we look in the right tree.
-		                else if(XY[0] > root.getXValue())
-		                {
-							//TODO: ANDERE TREE MOET OOK INGEVULD WORDEN!
-							return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
-		                }
+		            else if (XY [0] > root.getXValue ()) 
+					{
+						return new Node<float> (XY [0], XY [1], root.getLeftMTree (), insertIntoKD (XY, false, root.getRightMTree ()));
+					}
 						//Node to be inserted has smaller X value, so we look in the right tree.
-		                else 
-		                {
-							return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
-		                }
-	            }
+		            else 
+					{
+						return new Node<float> (XY [0], XY [1], insertIntoKD (XY, false, root.getLeftMTree ()), root.getRightMTree ());
+					}
+				}
 				//Next level sorted on Y
-	            else
-	            {
-						//Node already present!
-						if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
-						{
-							Console.WriteLine("Node already there!");
-							return root;
-						}	
+	            else 
+				{
+					//Node already present!
+					if (XY [0] == root.getXValue () && XY [1] == root.getYValue ()) 
+					{
+						Console.WriteLine ("Node already there!");
+						return root;
+					}	
 						//Node to be inserted has bigger Y value, so we look in the right tree.
-						else if(XY[1] > root.getYValue())
-						{
-							//TODO: ANDERE TREE MOET OOK INGEVULD WORDEN!
-							return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
-						}
+					else if (XY [1] > root.getYValue ()) 
+					{
+						return new Node<float> (XY [0], XY [1], root.getLeftMTree (), insertIntoKD (XY, false, root.getRightMTree ()));
+					}
 						//Node to be inserted has smaller Y value, so we look in the left tree.
-						else 
-						{
-							return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
-						}
-	            }
-	        }
-	        else
-	            return root;
+					else 
+					{
+						return new Node<float> (XY [0], XY [1], insertIntoKD (XY, false, root.getLeftMTree ()), root.getRightMTree ());
+					}
+				}
+			} 
+			else 
+			{
+				//just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
+				Console.WriteLine ("Inserted root element");
+				return new Node<float> (XY [0], XY [1], new EmptyNode<float> (), new EmptyNode<float> ());
+			}
 	    }
     
 
-		static bool findNode(float[] XY, bool nextLevelSortedOnX, MiniTree<int> root)
+		static bool findNode(float[] XY, bool nextLevelSortedOnX, MiniTree<float> root)
 		{
 			//If the root is empty we cant do squat.	
 			if(root.isEmpty() == false)
@@ -353,7 +352,7 @@ namespace EntryPoint
 					//Node found!
 					if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
 					{
-						Console.WriteLine("Node already there!");
+						Console.WriteLine("Node found");
 						return true;
 					}	
 					//Node has bigger Y value, so we look in the right tree.
@@ -369,22 +368,34 @@ namespace EntryPoint
 				}
 			}
 			else
+				Console.WriteLine("Empty");
 				return false;
 		}
+
+
 
 		private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
 			IEnumerable<Vector2> specialBuildings, 
 			IEnumerable<Tuple<Vector2, float>> housesAndDistances)
 		{
-			MiniTree<float> Tree = new MiniTree<float>();
+			var Tree = new EmptyNode<float>() as MiniTree<float>;
 			List<Vector2> listOfBuildings = specialBuildings.ToList();
 
 			foreach(Vector2 v in listOfBuildings)
 			{
 				float[] XnY = new float[]{ v.X, v.Y };
-				insertIntoKD(XnY, true, Tree);
+				//At first I forgot to assign Tree to the result of InsertIntoKd. So tree didnt change whilst I was still passing it to methods,
+				//Thinking it was filled even though it was never even touched!
+				//TODO: Still doesnt work correctly. Test with just dummydata slapped into the tree.
+				Tree = insertIntoKD(XnY, true, Tree);
 			}
-			return null;
+
+			float[] testValuesToFind = new float[]{listOfBuildings[0].X, listOfBuildings[0].Y}; 
+			findNode (testValuesToFind, false, Tree);
+
+			List<List<Vector2>> ist1 = new List<List<Vector2>> ();
+
+			return ist1.AsEnumerable();
 		}
 
 
