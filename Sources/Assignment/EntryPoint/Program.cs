@@ -315,7 +315,7 @@ namespace EntryPoint
 			else 
 			{
 				//just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
-				Console.WriteLine ("Inserted root element");
+				//Console.WriteLine ("Inserted root element");
 				return new Node<float> (XY [0], XY [1], new EmptyNode<float> (), new EmptyNode<float> ());
 			}
 	    }
@@ -381,18 +381,26 @@ namespace EntryPoint
 			var Tree = new EmptyNode<float>() as MiniTree<float>;
 			List<Vector2> listOfBuildings = specialBuildings.ToList();
 
+			float[] XnY = new float[]{ listOfBuildings[0].X, listOfBuildings[0].Y };
+			Tree = insertIntoKD(XnY, true, Tree);
+		
+			//Todo: Foreach loop is faulty and doesnt insert well. T
+			/*
 			foreach(Vector2 v in listOfBuildings)
 			{
 				float[] XnY = new float[]{ v.X, v.Y };
 				//At first I forgot to assign Tree to the result of InsertIntoKd. So tree didnt change whilst I was still passing it to methods,
 				//Thinking it was filled even though it was never even touched!
-				//TODO: Still doesnt work correctly. Test with just dummydata slapped into the tree.
+
 				Tree = insertIntoKD(XnY, true, Tree);
 			}
+			*/
 
 			float[] testValuesToFind = new float[]{listOfBuildings[0].X, listOfBuildings[0].Y}; 
-			findNode (testValuesToFind, false, Tree);
+			findNode(testValuesToFind, false, Tree);
 
+
+			//Todo: Why in Nurgles name does this DO anything?!
 			List<List<Vector2>> ist1 = new List<List<Vector2>> ();
 
 			return ist1.AsEnumerable();
