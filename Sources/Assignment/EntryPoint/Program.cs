@@ -15,24 +15,24 @@ namespace EntryPoint
 			read_input:
 			switch (Microsoft.VisualBasic.Interaction.InputBox("Which assignment shall run next? (1, 2, 3, 4, or q for quit)", "Choose assignment", VirtualCity.GetInitialValue()))
 			{
-			case "1":
-				using (var game = VirtualCity.RunAssignment1(SortSpecialBuildingsByDistance, fullscreen))
-					game.Run();
-				break;
-			case "2":
-				using (var game = VirtualCity.RunAssignment2(FindSpecialBuildingsWithinDistanceFromHouse, fullscreen))
-					game.Run();
-				break;
-			case "3":
-				using (var game = VirtualCity.RunAssignment3(FindRoute, fullscreen))
-					game.Run();
-				break;
-			case "4":
-				using (var game = VirtualCity.RunAssignment4(FindRoutesToAll, fullscreen))
-					game.Run();
-				break;
-			case "q":
-				return;
+				case "1":
+					using (var game = VirtualCity.RunAssignment1(SortSpecialBuildingsByDistance, fullscreen))
+						game.Run();
+					break;
+				case "2":
+					using (var game = VirtualCity.RunAssignment2(FindSpecialBuildingsWithinDistanceFromHouse, fullscreen))
+						game.Run();
+					break;
+				case "3":
+					using (var game = VirtualCity.RunAssignment3(FindRoute, fullscreen))
+						game.Run();
+					break;
+				case "4":
+					using (var game = VirtualCity.RunAssignment4(FindRoutesToAll, fullscreen))
+						game.Run();
+					break;
+				case "q":
+					return;
 			}
 			goto read_input;
 		}
@@ -42,14 +42,14 @@ namespace EntryPoint
      * --------------------------------------------------
      * ROBERT KRAAIJEVELD (0890289@hr.nl) INF2C: 30-11-15 A.D
      * --------------------------------------------------
-     */ 
+     */
 
 
 
-	/* *************
+		/* *************
      * MERGESORT
      * ************
-     */ 
+     */
 
 
 		public static void MergeSort(float[] listToSort, int begin, int end)
@@ -131,7 +131,7 @@ namespace EntryPoint
 			for (int i = 0; i < SpecialBuildingsList.Count; i++)
 			{
 				SortedDistances[i] = Vector2.Distance(house, SpecialBuildingsList.ElementAt(i));
-				UnsortedDistances[i] =  Vector2.Distance(house, SpecialBuildingsList.ElementAt(i));
+				UnsortedDistances[i] = Vector2.Distance(house, SpecialBuildingsList.ElementAt(i));
 			}
 
 			//Sort the values of 1 of the Arrays; SortedDistances.
@@ -178,17 +178,18 @@ namespace EntryPoint
 		interface MiniTree<T>
 		{
 			Boolean isEmpty();
+
 			MiniTree<T> getLeftMTree();
+
 			MiniTree<T> getRightMTree();
-			T getXValue();
-			T getYValue();
+
+			T getVector();
 		}
 
-		//since node and emptynode both inherit from the abstract interface minitree, they can both be used 
+		//since node and emptynode both inherit from the abstract interface minitree, they can both be used
 		class Node<T> : MiniTree<T>
 		{
-			T Xvalue;
-			T Yvalue;
+            T Vector;
 			MiniTree<T> left;
 			MiniTree<T> right;
 
@@ -198,15 +199,9 @@ namespace EntryPoint
 			}
 
 			//getters
-			public T getXValue()
+			public T getVector()
 			{
-				return Xvalue;
-			}
-
-			//getters
-			public T getYValue()
-			{
-				return Yvalue;
+				return Vector;
 			}
 
 			public MiniTree<T> getLeftMTree()
@@ -221,17 +216,16 @@ namespace EntryPoint
 
 
 			//constructor
-			public Node(T xval, T yval, MiniTree<T> l, MiniTree<T> r)
+			public Node(Vector2 V, MiniTree<T> l, MiniTree<T> r)
 			{
-				Xvalue = xval;
-				Yvalue = yval;
+                Vector = V;
 				left = l;
 				right = r;
 			}
 
 		}
 
-		//since node and emptynode both inherit from the abstract interface minitree, they can both be used 
+		//since node and emptynode both inherit from the abstract interface minitree, they can both be used
 		class EmptyNode<T> : MiniTree<T>
 		{
 			public Boolean isEmpty()
@@ -240,12 +234,7 @@ namespace EntryPoint
 			}
 
 			//getters
-			public T getXValue()
-			{
-				throw new NotImplementedException();
-			}
-
-			public T getYValue()
+			public T getVector()
 			{
 				throw new NotImplementedException();
 			}
@@ -266,144 +255,115 @@ namespace EntryPoint
 
 
 		//Call this with nextLevelSortedOnX =true!
-	    static MiniTree<float> insertIntoKD(float[] XY, bool nextLevelSortedOnX, MiniTree<float> root)
-	    {
+		static MiniTree<Vector2> insertIntoKD(float[] XY, bool nextLevelSortedOnX, MiniTree<Vector2> root)
+		{
 			//If the root is empty we cant do squat.	
 			if (root.isEmpty() == false)
 			{
 				//We are in a level that is sorted by X values.
-				if (nextLevelSortedOnX == true) 
+				if (nextLevelSortedOnX() == true)
 				{
 					//Node already present!
-					if (XY [0] == root.getXValue () && XY [1] == root.getYValue ()) 
+					if (XY[0] == root.getVector().X && XY[1] == root.getVector().Y)
 					{
-						Console.WriteLine ("Node already there!");
+						Console.WriteLine("Node already there!");
 						return root;
 					}	
 						//Node to be inserted has bigger X value, so we look in the right tree.
-		            else if (XY [0] > root.getXValue ()) 
+                    else if (XY[0] > root.getVector.X)
 					{
-						return new Node<float> (XY [0], XY [1], root.getLeftMTree (), insertIntoKD (XY, false, root.getRightMTree ()));
+                        return new Node<Vector2>(new Vector2(XY[0], XY[1]), root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
 					}
 						//Node to be inserted has smaller X value, so we look in the right tree.
-		            else 
+		            else
 					{
-						return new Node<float> (XY [0], XY [1], insertIntoKD (XY, false, root.getLeftMTree ()), root.getRightMTree ());
+                        return new Node<Vector2>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
 					}
 				}
 				//Next level sorted on Y
-	            else 
+	            else
 				{
 					//Node already present!
-					if (XY [0] == root.getXValue () && XY [1] == root.getYValue ()) 
+					if (XY[0] == root.getXValue() && XY[1] == root.getYValue())
 					{
-						Console.WriteLine ("Node already there!");
+						Console.WriteLine("Node already there!");
 						return root;
 					}	
-						//Node to be inserted has bigger Y value, so we look in the right tree.
-					else if (XY [1] > root.getYValue ()) 
+					//Node to be inserted has bigger Y value, so we look in the right tree.
+					else if (XY[1] > root.getYValue())
 					{
-						return new Node<float> (XY [0], XY [1], root.getLeftMTree (), insertIntoKD (XY, false, root.getRightMTree ()));
+						return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
 					}
-						//Node to be inserted has smaller Y value, so we look in the left tree.
-					else 
+					//Node to be inserted has smaller Y value, so we look in the left tree.
+					else
 					{
-						return new Node<float> (XY [0], XY [1], insertIntoKD (XY, false, root.getLeftMTree ()), root.getRightMTree ());
-					}
-				}
-			} 
-			else 
-			{
-				//just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
-				//Console.WriteLine ("Inserted root element");
-				return new Node<float> (XY [0], XY [1], new EmptyNode<float> (), new EmptyNode<float> ());
-			}
-	    }
-    
-
-		static bool findNode(float[] XY, bool nextLevelSortedOnX, MiniTree<float> root)
-		{
-			//If the root is empty we cant do squat.	
-			if(root.isEmpty() == false)
-			{
-				//We are in a level that is sorted by X values.
-				if(nextLevelSortedOnX == true)
-				{
-					//Node found!
-					if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
-					{
-						Console.WriteLine("Node found!");
-						return true;
-					}	
-					//Node has bigger X value, so we look in the right tree.
-					else if(XY[0] > root.getXValue())
-					{
-						return findNode(XY, false, root.getRightMTree());
-					}
-					//Node has smaller X value, so we look in the right tree.
-					else 
-					{
-						return findNode(XY, false, root.getLeftMTree());
-					}
-				}
-				//Next level sorted on Y
-				else
-				{
-					//Node found!
-					if (XY [0] == root.getXValue() && XY [1] == root.getYValue()) 
-					{
-						Console.WriteLine("Node found");
-						return true;
-					}	
-					//Node has bigger Y value, so we look in the right tree.
-					else if(XY[1] > root.getYValue())
-					{
-						return findNode(XY, true, root.getRightMTree());
-					}
-					//Node thas smaller Y value, so we look in the left tree.
-					else 
-					{
-						return findNode(XY, true, root.getLeftMTree());
+						return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
 					}
 				}
 			}
 			else
-				Console.WriteLine("Empty");
-				return false;
+			{
+				//just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
+				//Console.WriteLine ("Inserted root element");
+                return new Node<Vector2>(new Vector2(XY[0], XY[1]), new EmptyNode<Vector2>(), new EmptyNode <Vector2>());
+			}
+		}
+            
+
+
+		//Rangesort
+        //Zelfde truuk als de treeInsert. Tree = rangeSearch() enz
+        static List<Vector2> rangeSearch(MiniTree<Vector2> root, Vector2 houseVector, bool isNextLevelX, float radius)
+		{
+            if (root.isEmpty() == false)
+            {
+                
+            }
+            else
+            {
+                Console.WriteLine("Root node is empty.");
+                return new List<Vector2>();
+            }
 		}
 
+        //These 2 will be called above. BOth have to return true.
+        bool checkXValues(Vector2 specialBuilding, Vector2 house, float radius)
+        {
+            if (specialBuilding.X < (house.X + radius) && specialBuilding.X > (house.X - radius))
+            {
+                //We have a match on X!
+            }
+        }
 
+        bool checkYValues(Vector2 specialBuilding, Vector2 house, float radius)
+        {
+            if (specialBuilding.Y < (house.Y + radius) && specialBuilding.Y > (house.Y - radius))
+            {
+                //We have a match on Y!
+            }
+        }
+
+		 /**********************
+          * ASSIGNMENT METHODS 
+         ***********************/
+		 
 
 		private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
-			IEnumerable<Vector2> specialBuildings, 
-			IEnumerable<Tuple<Vector2, float>> housesAndDistances)
+		IEnumerable<Vector2> specialBuildings, 
+		IEnumerable<Tuple<Vector2, float>> housesAndDistances)
 		{
 			var Tree = new EmptyNode<float>() as MiniTree<float>;
 			List<Vector2> listOfBuildings = specialBuildings.ToList();
-
-			float[] XnY = new float[]{ listOfBuildings[0].X, listOfBuildings[0].Y };
-			Tree = insertIntoKD(XnY, true, Tree);
-		
-			//Todo: Foreach loop is faulty and doesnt insert well. T
-			/*
+           
 			foreach(Vector2 v in listOfBuildings)
 			{
-				float[] XnY = new float[]{ v.X, v.Y };
 				//At first I forgot to assign Tree to the result of InsertIntoKd. So tree didnt change whilst I was still passing it to methods,
 				//Thinking it was filled even though it was never even touched!
-
-				Tree = insertIntoKD(XnY, true, Tree);
+                Tree = insertIntoKD(v, true, Tree);
 			}
-			*/
 
-			float[] testValuesToFind = new float[]{listOfBuildings[0].X, listOfBuildings[0].Y}; 
-			findNode(testValuesToFind, false, Tree);
-
-
-			//Todo: Why in Nurgles name does this DO anything?!
-			List<List<Vector2>> ist1 = new List<List<Vector2>> ();
-
-			return ist1.AsEnumerable();
+            List<List<Vector2>> list = new List<List<Vector2>>();
+			return list.AsEnumerable();
 		}
 
 
@@ -413,7 +373,7 @@ namespace EntryPoint
 
 
 		private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
-			Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
+		                                                              Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
 		{
 			var startingRoad = roads.Where(x => x.Item1.Equals(startingBuilding)).First();
 			List<Tuple<Vector2, Vector2>> fakeBestPath = new List<Tuple<Vector2, Vector2>>() { startingRoad };
@@ -427,7 +387,7 @@ namespace EntryPoint
 		}
 
 		private static IEnumerable<IEnumerable<Tuple<Vector2, Vector2>>> FindRoutesToAll(Vector2 startingBuilding, 
-			IEnumerable<Vector2> destinationBuildings, IEnumerable<Tuple<Vector2, Vector2>> roads)
+		                                                                                 IEnumerable<Vector2> destinationBuildings, IEnumerable<Tuple<Vector2, Vector2>> roads)
 		{
 			List<List<Tuple<Vector2, Vector2>>> result = new List<List<Tuple<Vector2, Vector2>>>();
 			foreach (var d in destinationBuildings)
