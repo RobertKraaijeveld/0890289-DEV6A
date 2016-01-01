@@ -37,7 +37,7 @@ namespace EntryPoint
 			goto read_input;
 		}
 
-		/*
+	/*
      * Student Stuff starts here.
      * --------------------------------------------------
      * ROBERT KRAAIJEVELD (0890289@hr.nl) INF2C: 30-11-15 A.D
@@ -216,7 +216,7 @@ namespace EntryPoint
 
 
 			//constructor
-			public Node(Vector2 V, MiniTree<T> l, MiniTree<T> r)
+			public Node(T V, MiniTree<T> l, MiniTree<T> r)
 			{
                 Vector = V;
 				left = l;
@@ -249,7 +249,7 @@ namespace EntryPoint
 			{
 				throw new NotImplementedException();
 			}
-			//(explicit) constructor is not specified in the interface contract and thusly not necessary
+			//(explicit) constructor for an emptynode is not specified in the interface contract and thusly not necessary
 			//same goes for setters
 		}
 
@@ -261,7 +261,7 @@ namespace EntryPoint
 			if (root.isEmpty() == false)
 			{
 				//We are in a level that is sorted by X values.
-				if (nextLevelSortedOnX() == true)
+				if (nextLevelSortedOnX == true)
 				{
 					//Node already present!
 					if (XY[0] == root.getVector().X && XY[1] == root.getVector().Y)
@@ -270,54 +270,96 @@ namespace EntryPoint
 						return root;
 					}	
 						//Node to be inserted has bigger X value, so we look in the right tree.
-                    else if (XY[0] > root.getVector.X)
+                    else if (XY[0] > root.getVector().X)
 					{
                         return new Node<Vector2>(new Vector2(XY[0], XY[1]), root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
 					}
-						//Node to be inserted has smaller X value, so we look in the right tree.
+						//Node to be inserted has smaller X value, so we look in the left tree.
 		            else
 					{
-                        return new Node<Vector2>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
+                        return new Node<Vector2>(new Vector2(XY[0], XY[1]), insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
 					}
 				}
 				//Next level sorted on Y
 	            else
 				{
 					//Node already present!
-					if (XY[0] == root.getXValue() && XY[1] == root.getYValue())
+					if (XY[0] == root.getVector().X && XY[1] == root.getVector().Y)
 					{
 						Console.WriteLine("Node already there!");
 						return root;
 					}	
 					//Node to be inserted has bigger Y value, so we look in the right tree.
-					else if (XY[1] > root.getYValue())
+					else if (XY[1] > root.getVector().Y)
 					{
-						return new Node<float>(XY[0], XY[1], root.getLeftMTree(), insertIntoKD(XY, false, root.getRightMTree()));
+                        return new Node<Vector2>(new Vector2(XY[0], XY[1]), root.getLeftMTree(), insertIntoKD(XY, true, root.getRightMTree()));
 					}
 					//Node to be inserted has smaller Y value, so we look in the left tree.
 					else
 					{
-						return new Node<float>(XY[0], XY[1], insertIntoKD(XY, false, root.getLeftMTree()), root.getRightMTree());
+                        return new Node<Vector2>(new Vector2(XY[0], XY[1]), insertIntoKD(XY, true, root.getLeftMTree()), root.getRightMTree());
 					}
 				}
 			}
 			else
 			{
 				//just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
-				//Console.WriteLine ("Inserted root element");
+				Console.WriteLine ("Inserted root element");
                 return new Node<Vector2>(new Vector2(XY[0], XY[1]), new EmptyNode<Vector2>(), new EmptyNode <Vector2>());
 			}
 		}
             
-
-
-		//Rangesort
-        //Zelfde truuk als de treeInsert. Tree = rangeSearch() enz
+       
+		//Rangesearch
         static List<Vector2> rangeSearch(MiniTree<Vector2> root, Vector2 houseVector, bool isNextLevelX, float radius)
 		{
             if (root.isEmpty() == false)
             {
-                
+                if (isNextLevelX == true)
+                {
+                    //Perfect Node within range, we can return the subtree of root
+                    if (root.getVector().X < (houseVector.X + radius) && root.getVector().X > (houseVector.X - radius))
+                    {
+                        //run through all the nodes in the left n right subtree and add all their values to the returnlist
+                    }  
+                    else if (root.getVector().X > (houseVector.X + radius))
+                    {
+                        return rangeSearch(root.getLeftMTree(), houseVector, false, radius);
+                    }
+                    else if (root.getVector().X < (houseVector.X - radius))
+                    {
+                        return rangeSearch(root.getRightMTree(), houseVector, false, radius);
+                    }
+                    else
+                    {
+                        //What to return? Lege lijst?
+                    }
+                    //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
+                    //Bij te groot: We gaan in de linkerTree naar kleinere waarden kijken: return rangeSearch(root.getLeftTree(), houseVector, false, radius);
+                    //Bij te klein: We gaan in de rechterTree nar grotere waarden kijken: return rangeSearch(root.getRightTree(), houseVector, false, radius);
+                }
+                else if (isNextLevelX == false)
+                {
+                    //Perfect Node within range, we can return the subtree of root
+                    if (root.getVector().Y < (houseVector.Y + radius) && root.getVector().Y > (houseVector.Y - radius))
+                    {
+                        //run through all the nodes in the left n right subtree and add all their values to the returnlist
+                    }
+                    else if (root.getVector().Y > (houseVector.Y + radius))
+                    {
+                        return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
+                    }
+                    else if (root.getVector().Y < (houseVector.Y - radius))
+                    {
+                        return rangeSearch(root.getRightMTree(), houseVector, true, radius);
+                    }
+                    else
+                    {
+                    }
+                    //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
+                    //Bij te groot: We gaan in de linkerTree kijken: return rangeSearch(root.getLeftTree(), houseVector, true, radius);
+                    //Bij te klein: We gaan in de rechterTree nar grotere waarden kijken: return rangeSearch(root.getRightTree(), houseVector, true, radius);
+                }
             }
             else
             {
@@ -326,26 +368,28 @@ namespace EntryPoint
             }
 		}
 
-        //These 2 will be called above. BOth have to return true.
-        bool checkXValues(Vector2 specialBuilding, Vector2 house, float radius)
+    
+        static List<Vector2> returnAllNodesAsList(MiniTree<Vector2> root)
         {
-            if (specialBuilding.X < (house.X + radius) && specialBuilding.X > (house.X - radius))
+            List<Vector2> returnList = new List<Vector2>();
+            if (root.isEmpty() != true)
             {
-                //We have a match on X!
+                returnAllNodesAsList(root.getLeftMTree());
+                returnAllNodesAsList(root.getRightMTree());
+                returnList.Add(root.getVector());
+                return returnList;
+            }
+            else
+            {
+                Console.WriteLine("Minitree to be converted to list was empty!");
+                return new List<Vector2>();
             }
         }
 
-        bool checkYValues(Vector2 specialBuilding, Vector2 house, float radius)
-        {
-            if (specialBuilding.Y < (house.Y + radius) && specialBuilding.Y > (house.Y - radius))
-            {
-                //We have a match on Y!
-            }
-        }
 
-		 /**********************
-          * ASSIGNMENT METHODS 
-         ***********************/
+    	/**********************
+        * ASSIGNMENT METHODS 
+        ***********************/
 		 
 
 		private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
