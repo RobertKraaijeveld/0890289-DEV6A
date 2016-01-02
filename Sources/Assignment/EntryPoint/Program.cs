@@ -327,17 +327,17 @@ namespace EntryPoint
                     }  
                     else if (root.getVector().X > (houseVector.X + radius))
                     {
-                        Console.WriteLine("Imperfect X, going left");
-                        return rangeSearch(root.getLeftMTree(), houseVector, false, radius);
+                        Console.WriteLine("Going left");
+                        return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
                     }
                     else if (root.getVector().X < (houseVector.X - radius))
                     {
-                        Console.WriteLine("Imperfect X, going right");
-                        return rangeSearch(root.getRightMTree(), houseVector, false, radius);
+                         Console.WriteLine("Going right");
+                         return rangeSearch(root.getRightMTree(), houseVector, true, radius);    
                     }
                     else
                     {
-                        Console.WriteLine("Shit node");
+                        Console.WriteLine("Not a single matching node found");
                         return new List<Vector2>();
                     }
                     //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
@@ -356,19 +356,19 @@ namespace EntryPoint
                         Console.WriteLine("Perfect node");
                         return returnAllNodesAsList(root);
                     }
-                    else if (root.getVector().Y > (houseVector.Y + radius))
+                    else if (root.getVector().Y > (houseVector.Y + radius) )
                     {
-                        Console.WriteLine("Imperfect Y, going left");
+                        Console.WriteLine("Going left");
                         return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
                     }
                     else if (root.getVector().Y < (houseVector.Y - radius))
                     {
-                        Console.WriteLine("Imperfect Y, going right");
-                        return rangeSearch(root.getRightMTree(), houseVector, true, radius);
+                         Console.WriteLine("Going right");
+                         return rangeSearch(root.getRightMTree(), houseVector, true, radius);
                     }
                     else
                     {
-                        Console.WriteLine("Shit node");
+                        Console.WriteLine("Not a single matching node found");
                         return new List<Vector2>();
                     }
                     //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
@@ -385,19 +385,14 @@ namespace EntryPoint
 
         static List<Vector2> returnAllNodesAsList(MiniTree<Vector2> root)
         {
-            List<Vector2> returnList = new List<Vector2>();
+            List<Vector2> resultList = new List<Vector2>();
             if (root.isEmpty() == false)
-            {
-                //We are in a node that has children
-                returnList.Add(root.getVector());
-                returnAllNodesAsList(root.getLeftMTree());
-                returnAllNodesAsList(root.getRightMTree());
-                return returnList;
+            { 
+                resultList.Add(root.getVector());
+                return resultList;
             }
             else
-            {
-                return returnList;
-            }
+                return resultList;
         }
 
 
@@ -425,9 +420,9 @@ namespace EntryPoint
 
             foreach(Tuple<Vector2, float> t in housesAndDistancesList)
             {
-                returnList.Add(rangeSearch(Tree,t.Item1, true, t.Item2));
+                Console.WriteLine("Looking in new house!");
+                rangeSearch(Tree, t.Item1, true, t.Item2);
             }
-           
 
             foreach (List<Vector2> t in returnList)
             {
