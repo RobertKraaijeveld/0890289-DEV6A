@@ -253,7 +253,7 @@ namespace EntryPoint
             //same goes for setters
         }
 
-
+        //MASSIVE DOUBLE INSERTIONS!! EXPLAINS EVERYTHING
         //Call this with nextLevelSortedOnX =true!
         static MiniTree<Vector2> insertIntoKD(Vector2 Vector, bool nextLevelSortedOnX, MiniTree<Vector2> root)
         {
@@ -327,22 +327,19 @@ namespace EntryPoint
                     }  
                     else if (root.getVector().X > (houseVector.X + radius))
                     {
-                        Console.WriteLine("Going left");
-                        return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
+                        Console.WriteLine(root.getVector().X + " is bigger than " + (houseVector.X + radius)  + " so we go left");
+                        return rangeSearch(root.getLeftMTree(), houseVector, false, radius);
                     }
-                    else if (root.getVector().X < (houseVector.X - radius))
+                    else //if (root.getVector().X < (houseVector.X - radius))
                     {
-                         Console.WriteLine("Going right");
-                         return rangeSearch(root.getRightMTree(), houseVector, true, radius);    
+                        Console.WriteLine(root.getVector().X + " is smaller than " + (houseVector.X + radius) + " so we go right");
+                         return rangeSearch(root.getRightMTree(), houseVector, false, radius);
                     }
-                    else
-                    {
-                        Console.WriteLine("Not a single matching node found");
-                        return new List<Vector2>();
-                    }
-                    //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
-                    //Bij te groot: We gaan in de linkerTree naar kleinere waarden kijken: return rangeSearch(root.getLeftTree(), houseVector, false, radius);
-                    //Bij te klein: We gaan in de rechterTree nar grotere waarden kijken: return rangeSearch(root.getRightTree(), houseVector, false, radius);
+                    //else
+                    //{
+                      //  Console.WriteLine("Not a single matching node found");
+                        //return new List<Vector2>();
+                    //}
                 }
                 else 
                 {
@@ -358,22 +355,19 @@ namespace EntryPoint
                     }
                     else if (root.getVector().Y > (houseVector.Y + radius) )
                     {
-                        Console.WriteLine("Going left");
+                        Console.WriteLine(root.getVector().Y + " is bigger than " + (houseVector.Y + radius) + " so we go left");
                         return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
                     }
-                    else if (root.getVector().Y < (houseVector.Y - radius))
+                    else //if (root.getVector().Y < (houseVector.Y - radius))
                     {
-                         Console.WriteLine("Going right");
-                         return rangeSearch(root.getRightMTree(), houseVector, true, radius);
+                        Console.WriteLine(root.getVector().Y + " is smaller than " + (houseVector.Y + radius) + " so we go right");
+                        return rangeSearch(root.getRightMTree(), houseVector, true, radius);
                     }
-                    else
-                    {
-                        Console.WriteLine("Not a single matching node found");
-                        return new List<Vector2>();
-                    }
-                    //Nog 3 andere mogelijkheden: Te groot, te klein of allebei.
-                    //Bij te groot: We gaan in de linkerTree kijken: return rangeSearch(root.getLeftTree(), houseVector, true, radius);
-                    //Bij te klein: We gaan in de rechterTree nar grotere waarden kijken: return rangeSearch(root.getRightTree(), houseVector, true, radius);
+                   // else
+                    //{
+                     //   Console.WriteLine("Not a single matching node found");
+                     //   return new List<Vector2>();
+                   // }
                 }
             }
             else
@@ -387,8 +381,16 @@ namespace EntryPoint
         {
             List<Vector2> resultList = new List<Vector2>();
             if (root.isEmpty() == false)
-            { 
+            {
                 resultList.Add(root.getVector());
+                if (root.getLeftMTree().isEmpty() == false)
+                {
+                    returnAllNodesAsList(root.getLeftMTree());
+                }
+                if (root.getRightMTree().isEmpty() == false)
+                {
+                    returnAllNodesAsList(root.getLeftMTree());
+                }
                 return resultList;
             }
             else
@@ -412,6 +414,7 @@ namespace EntryPoint
             {
                 //At first I forgot to assign Tree to the result of InsertIntoKd. So tree didnt change whilst I was still passing it to methods,
                 //Thinking it was filled even though it was never even touched!
+                Console.WriteLine("Going to insert: " + v.X + v.Y);
                 Tree = insertIntoKD(v, true, Tree);
             }
 
@@ -420,17 +423,15 @@ namespace EntryPoint
 
             foreach(Tuple<Vector2, float> t in housesAndDistancesList)
             {
-                Console.WriteLine("Looking in new house!");
-                rangeSearch(Tree, t.Item1, true, t.Item2);
+                Console.WriteLine("Looking in new house");
+                returnList.Add(rangeSearch(Tree, t.Item1, true, t.Item2));
             }
 
-            foreach (List<Vector2> t in returnList)
+            foreach (List<Vector2> l in returnList)
             {
-                Console.WriteLine(t.Count);
+                Console.WriteLine(l.Count);
             }
-            Console.WriteLine(returnList.Count);
-
-
+     
             return returnList.AsEnumerable();
         }
 
