@@ -183,6 +183,8 @@ namespace EntryPoint
 
             MiniTree<T> getRightMTree();
 
+            Boolean sortedOnX();
+
             T getVector();
         }
 
@@ -192,6 +194,12 @@ namespace EntryPoint
             T Vector;
             MiniTree<T> left;
             MiniTree<T> right;
+            Boolean sortage;
+
+            public Boolean sortedOnX()
+            {
+                return sortage;
+            }
 
             public Boolean isEmpty()
             {
@@ -216,11 +224,12 @@ namespace EntryPoint
 
 
             //constructor
-            public Node(T V, MiniTree<T> l, MiniTree<T> r)
+            public Node(T V, MiniTree<T> l, MiniTree<T> r, Boolean s)
             {
                 Vector = V;
                 left = l;
                 right = r;
+                sortage = s;
             }
 
         }
@@ -228,6 +237,11 @@ namespace EntryPoint
         //since node and emptynode both inherit from the abstract interface minitree, they can both be used
         class EmptyNode<T> : MiniTree<T>
         {
+            public Boolean sortedOnX()
+            {
+                return false;
+            }
+
             public Boolean isEmpty()
             {
                 return true;
@@ -253,150 +267,123 @@ namespace EntryPoint
             //same goes for setters
         }
 
-        //MASSIVE DOUBLE INSERTIONS!! EXPLAINS EVERYTHING
+
+        /*
+         * INVESTIGATE: IK DEED insertIntoKD(etc ,etc, Vector)
+         * STEEF DEED: insertIntoKD(etc, etc, root.Vector);
+         */
+
         //Call this with nextLevelSortedOnX =true!
-        static MiniTree<Vector2> insertIntoKD(Vector2 Vector, bool nextLevelSortedOnX, MiniTree<Vector2> root)
+        static MiniTree<Vector2> insertIntoKD(Vector2 Vector, MiniTree<Vector2> root, bool isParentX)
         {
-            //If the root is empty we cant do squat.    
-            if (root.isEmpty() == false)
+            if (root.isEmpty())
             {
-                //We are in a level that is sorted by X values.
-                if (nextLevelSortedOnX == true)
-                {
-                    //Node already present!
-                    if (Vector.X == root.getVector().X && Vector.Y == root.getVector().Y)
-                    {
-                        return root;
-                    }   
-                    //Node to be inserted has bigger X value, so we look in the right tree.
-                    else if (Vector.X > root.getVector().X)
-                    {
-                        return new Node<Vector2>(Vector, root.getLeftMTree(), insertIntoKD(Vector, false, root.getRightMTree()));
-                    }
-                    //Node to be inserted has smaller X value, so we look in the left tree.
-                    else
-                    {
-                        return new Node<Vector2>(Vector, insertIntoKD(Vector, false, root.getLeftMTree()), root.getRightMTree());
-                    }
-                }
-                //Next level sorted on Y
+                if (isParentX)
+                    return new Node<Vector2>(Vector, new EmptyNode<Vector2>(), new EmptyNode<Vector2>(), false);
                 else
-                {
-                    //Node already present!
-                    if (Vector.X == root.getVector().X && Vector.Y == root.getVector().Y)
-                    {
-                        return root;
-                    }   
-                    //Node to be inserted has bigger Y value, so we look in the right tree.
-                    else if (Vector.Y > root.getVector().Y)
-                    {
-                        return new Node<Vector2>(Vector, root.getLeftMTree(), insertIntoKD(Vector, true, root.getRightMTree()));
-                    }
-                    //Node to be inserted has smaller Y value, so we look in the left tree.
-                    else
-                    {
-                        return new Node<Vector2>(Vector, insertIntoKD(Vector, true, root.getLeftMTree()), root.getRightMTree());
-                    }
-                }
+                    return new Node<Vector2>(Vector, new EmptyNode<Vector2>(), new EmptyNode<Vector2>(), true);
+            }
+            if (root.sortedOnX())
+            {
+                if (root.getVector() == Vector)
+                    return root;
+
+                if (Vector.X < root.getVector().X)
+                    return new Node<Vector2>(root.getVector(), insertIntoKD(Vector, root.getLeftMTree(), root.sortedOnX()), root.getRightMTree(), true);
+                else
+                    return new Node<Vector2>(root.getVector(), root.getLeftMTree(), insertIntoKD(Vector, root.getRightMTree(), root.sortedOnX()), true);
             }
             else
             {
-                //just returning root or null would not do anything, since root is nothing! Therefore, we create an actual root node from which to go on.
-                //Note this situation also applies when inserting a new leaf!
-                return new Node<Vector2>(Vector, new EmptyNode<Vector2>(), new EmptyNode <Vector2>());
+                if (root.getVector() == Vector)
+                    return root;
+
+                if (Vector.Y < root.getVector().Y)
+                    return new Node<Vector2>(root.getVector(), insertIntoKD(Vector, root.getLeftMTree(), root.sortedOnX()), root.getRightMTree(), true);
+                else
+                    return new Node<Vector2>(root.getVector(), root.getLeftMTree(), insertIntoKD(Vector, root.getRightMTree(), root.sortedOnX()), true);
             }
         }
-
-       
+        
         //Rangesearch
-        static List<Vector2> rangeSearch(MiniTree<Vector2> root, Vector2 houseVector, bool isNextLevelX, float radius)
+        static void rangeSearch(MiniTree<Vector2> root, Vector2 houseVector, float radius, List<Vector2> returnList)
         {
             if (root.isEmpty() == false)
             {
-                if (isNextLevelX == true)
+                if (root.sortedOnX() == true)
                 {
-                    //Perfect Node within range, we can return the subtree of root
-                    if 
-                    (root.getVector().X < (houseVector.X + radius) && root.getVector().X > (houseVector.X - radius)
-                    && root.getVector().Y < (houseVector.Y + radius) && root.getVector().Y > (houseVector.Y - radius)
-                    )
+                    //If we are WITHIN radius
+                    if((houseVector.X - root.getVector().X) < radius)
                     {
-                        //run through all the nodes in the left n right subtree and add all their values to the returnlist
-                        Console.WriteLine("Perfect node");
-                        return returnAllNodesAsList(root);
+                        //Euclidean check for good measure (haha)
+                        if(Vector2.Distance(root.getVector(), houseVector) <= radius)
+                            returnList.Add(root.getVector());
+
+                        //Be thorough and searche the rest too
+                        rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
+                        rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }  
-                    else if (root.getVector().X > (houseVector.X + radius))
+                    else if (root.getVector().X >= (houseVector.X + radius))
                     {
                         Console.WriteLine(root.getVector().X + " is bigger than " + (houseVector.X + radius)  + " so we go left");
-                        return rangeSearch(root.getLeftMTree(), houseVector, false, radius);
+                        rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
                     }
-                    else //if (root.getVector().X < (houseVector.X - radius))
+                    else if (root.getVector().X <= (houseVector.X - radius))
                     {
                         Console.WriteLine(root.getVector().X + " is smaller than " + (houseVector.X + radius) + " so we go right");
-                         return rangeSearch(root.getRightMTree(), houseVector, false, radius);
+                        rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }
-                    //else
-                    //{
-                      //  Console.WriteLine("Not a single matching node found");
-                        //return new List<Vector2>();
-                    //}
+                    else
+                    {
+                        Console.WriteLine("Not a single matching node found");
+                    }
                 }
                 else 
                 {
                     //Perfect Node within range, we can return the subtree of root
-                    if 
-                    (root.getVector().X < (houseVector.X + radius) && root.getVector().X > (houseVector.X - radius)
-                    && root.getVector().Y < (houseVector.Y + radius) && root.getVector().Y > (houseVector.Y - radius)
-                    )
+                    //If we are WITHIN radius
+                    if((houseVector.Y - root.getVector().Y) <= radius)
                     {
-                        //run through all the nodes in the left n right subtree and add all their values to the returnlist
-                        Console.WriteLine("Perfect node");
-                        return returnAllNodesAsList(root);
+                        //Euclidean check for good measure (haha)
+                        if(Vector2.Distance(root.getVector(), houseVector) <= radius)
+                            returnList.Add(root.getVector());
+
+                        //Be thorough and searche the rest too
+                        rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
+                        rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }
                     else if (root.getVector().Y > (houseVector.Y + radius) )
                     {
                         Console.WriteLine(root.getVector().Y + " is bigger than " + (houseVector.Y + radius) + " so we go left");
-                        return rangeSearch(root.getLeftMTree(), houseVector, true, radius);
+                        rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
                     }
-                    else //if (root.getVector().Y < (houseVector.Y - radius))
+                    else if (root.getVector().Y < (houseVector.Y - radius))
                     {
                         Console.WriteLine(root.getVector().Y + " is smaller than " + (houseVector.Y + radius) + " so we go right");
-                        return rangeSearch(root.getRightMTree(), houseVector, true, radius);
+                        rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }
-                   // else
-                    //{
-                     //   Console.WriteLine("Not a single matching node found");
-                     //   return new List<Vector2>();
-                   // }
+                    else
+                    {
+                        Console.WriteLine("Not a single matching node found");
+                    }
                 }
             }
             else
             {
-                return new List<Vector2>();
+                Console.WriteLine("Empty tree");
             }
         }
+            
 
-
-        static List<Vector2> returnAllNodesAsList(MiniTree<Vector2> root)
+        static void KDpreOrder(MiniTree<Vector2> root)
         {
-            List<Vector2> resultList = new List<Vector2>();
-            if (root.isEmpty() == false)
-            {
-                resultList.Add(root.getVector());
-                if (root.getLeftMTree().isEmpty() == false)
-                {
-                    returnAllNodesAsList(root.getLeftMTree());
-                }
-                if (root.getRightMTree().isEmpty() == false)
-                {
-                    returnAllNodesAsList(root.getLeftMTree());
-                }
-                return resultList;
-            }
-            else
-                return resultList;
+            if (root.isEmpty() == true)
+                return;
+            
+            Console.WriteLine(root.getVector());  
+            KDpreOrder(root.getLeftMTree());
+            KDpreOrder(root.getRightMTree());
         }
-
 
         /**********************
         * ASSIGNMENT METHODS 
@@ -412,10 +399,7 @@ namespace EntryPoint
            
             foreach(Vector2 v in listOfBuildings)
             {
-                //At first I forgot to assign Tree to the result of InsertIntoKd. So tree didnt change whilst I was still passing it to methods,
-                //Thinking it was filled even though it was never even touched!
-                Console.WriteLine("Going to insert: " + v.X + v.Y);
-                Tree = insertIntoKD(v, true, Tree);
+                Tree = insertIntoKD(v, Tree, Tree.sortedOnX());
             }
 
             List<Tuple<Vector2, float>> housesAndDistancesList = housesAndDistances.ToList();
@@ -423,15 +407,18 @@ namespace EntryPoint
 
             foreach(Tuple<Vector2, float> t in housesAndDistancesList)
             {
-                Console.WriteLine("Looking in new house");
-                returnList.Add(rangeSearch(Tree, t.Item1, true, t.Item2));
+                List<Vector2> listForHouse = new List<Vector2>();
+                rangeSearch(Tree, t.Item1, t.Item2, listForHouse);
+                returnList.Add(listForHouse);
             }
 
             foreach (List<Vector2> l in returnList)
             {
                 Console.WriteLine(l.Count);
             }
-     
+
+            KDpreOrder(Tree);
+
             return returnList.AsEnumerable();
         }
 
@@ -474,5 +461,6 @@ namespace EntryPoint
             return result;
         }
     }
+
     #endif
 }
