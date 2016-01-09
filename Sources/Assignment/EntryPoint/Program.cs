@@ -171,10 +171,6 @@ namespace EntryPoint
         * TREES OF ALL SHAPES AND SIZES (not really though)
         *********************/
 
-        /********************
-        * CLASS DEFINITIONS 
-        *********************/
-
         interface MiniTree<T>
         {
             Boolean isEmpty();
@@ -267,11 +263,6 @@ namespace EntryPoint
             //same goes for setters
         }
 
-
-        /*
-         * INVESTIGATE: IK DEED insertIntoKD(etc ,etc, Vector)
-         * STEEF DEED: insertIntoKD(etc, etc, root.Vector);
-         */
 
         //Call this with nextLevelSortedOnX =true!
         static MiniTree<Vector2> insertIntoKD(Vector2 Vector, MiniTree<Vector2> root, bool isParentX)
@@ -385,6 +376,34 @@ namespace EntryPoint
             KDpreOrder(root.getRightMTree());
         }
 
+
+        /**********************
+        * END TREES
+        ***********************/
+
+        /*************************
+        * GRAPH AND FLOYD-WARSHAL
+        **************************/
+
+        //Id and Road Connection
+        static Dictionary<int, Vector2> createAdjMatrix(List<Tuple<Vector2, Vector2>> roads)
+        {
+            Dictionary<int, Vector2> cacheListOfDictionaries = new Dictionary<int, Vector2>();
+            int counter = 0;
+
+            foreach (Tuple<Vector2, Vector2> t in roads)
+            {
+                //We dont want nor need any double roadpoints in our dictionary, because it is unneccessary and takes time.
+                if(cacheListOfDictionaries.ContainsValue(t.Item1) == false)
+                    cacheListOfDictionaries.Add(counter++, t.Item1);
+                
+                if(cacheListOfDictionaries.ContainsValue(t.Item2) == false)
+                    cacheListOfDictionaries.Add(counter++, t.Item2);
+            }
+            return cacheListOfDictionaries;
+        }
+
+
         /**********************
         * ASSIGNMENT METHODS 
         ***********************/
@@ -410,11 +429,6 @@ namespace EntryPoint
                 List<Vector2> listForHouse = new List<Vector2>();
                 rangeSearch(Tree, t.Item1, t.Item2, listForHouse);
                 returnList.Add(listForHouse);
-            }
-
-            foreach (List<Vector2> l in returnList)
-            {
-                Console.WriteLine(l.Count);
             }
 
             KDpreOrder(Tree);
