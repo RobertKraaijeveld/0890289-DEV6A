@@ -264,7 +264,7 @@ namespace EntryPoint
         }
 
 
-        //Call this with nextLevelSortedOnX =true!
+        //Call this with isParentX =true!
         static MiniTree<Vector2> insertIntoKD(Vector2 Vector, MiniTree<Vector2> root, bool isParentX)
         {
             if (root.isEmpty())
@@ -290,9 +290,9 @@ namespace EntryPoint
                     return root;
 
                 if (Vector.Y < root.getVector().Y)
-                    return new Node<Vector2>(root.getVector(), insertIntoKD(Vector, root.getLeftMTree(), root.sortedOnX()), root.getRightMTree(), true);
+                    return new Node<Vector2>(root.getVector(), insertIntoKD(Vector, root.getLeftMTree(), root.sortedOnX()), root.getRightMTree(), false);
                 else
-                    return new Node<Vector2>(root.getVector(), root.getLeftMTree(), insertIntoKD(Vector, root.getRightMTree(), root.sortedOnX()), true);
+                    return new Node<Vector2>(root.getVector(), root.getLeftMTree(), insertIntoKD(Vector, root.getRightMTree(), root.sortedOnX()), false);
             }
         }
         
@@ -303,8 +303,7 @@ namespace EntryPoint
             {
                 if (root.sortedOnX() == true)
                 {
-                    //If we are WITHIN radius
-                    if((houseVector.X - root.getVector().X) < radius)
+                    if(Math.Abs(houseVector.X - root.getVector().X) <= radius)
                     {
                         //Euclidean check for good measure (haha)
                         if(Vector2.Distance(root.getVector(), houseVector) <= radius)
@@ -331,9 +330,7 @@ namespace EntryPoint
                 }
                 else 
                 {
-                    //Perfect Node within range, we can return the subtree of root
-                    //If we are WITHIN radius
-                    if((houseVector.Y - root.getVector().Y) <= radius)
+                    if(Math.Abs(houseVector.Y - root.getVector().Y) <= radius)
                     {
                         //Euclidean check for good measure (haha)
                         if(Vector2.Distance(root.getVector(), houseVector) <= radius)
@@ -366,16 +363,6 @@ namespace EntryPoint
         }
             
 
-        static void KDpreOrder(MiniTree<Vector2> root)
-        {
-            if (root.isEmpty() == true)
-                return;
-            
-            Console.WriteLine(root.getVector());  
-            KDpreOrder(root.getLeftMTree());
-            KDpreOrder(root.getRightMTree());
-        }
-
 
         /**********************
         * END TREES
@@ -386,22 +373,26 @@ namespace EntryPoint
         **************************/
 
         //Id and Road Connection
-        static Dictionary<int, Vector2> createAdjMatrix(List<Tuple<Vector2, Vector2>> roads)
+        static Dictionary<int, Vector2> createRoadVertices(List<Tuple<Vector2, Vector2>> roads)
         {
-            Dictionary<int, Vector2> cacheListOfDictionaries = new Dictionary<int, Vector2>();
-            int counter = 0;
+            Dictionary<int, Vector2> cachedDictionary = new Dictionary<int, Vector2>();
+            int key = 0;
 
             foreach (Tuple<Vector2, Vector2> t in roads)
             {
                 //We dont want nor need any double roadpoints in our dictionary, because it is unneccessary and takes time.
-                if(cacheListOfDictionaries.ContainsValue(t.Item1) == false)
-                    cacheListOfDictionaries.Add(counter++, t.Item1);
-                
-                if(cacheListOfDictionaries.ContainsValue(t.Item2) == false)
-                    cacheListOfDictionaries.Add(counter++, t.Item2);
+                if(cachedDictionary.ContainsValue(t.Item1) == false)
+                    cachedDictionary.Add(key++, t.Item1);
+                if(cachedDictionary.ContainsValue(t.Item2) == false)
+                    cachedDictionary.Add(key++, t.Item2);
             }
-            return cacheListOfDictionaries;
+            return cachedDictionary;
         }
+
+
+        private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute
+        (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
+
 
 
         /**********************
@@ -430,8 +421,6 @@ namespace EntryPoint
                 rangeSearch(Tree, t.Item1, t.Item2, listForHouse);
                 returnList.Add(listForHouse);
             }
-
-            KDpreOrder(Tree);
 
             return returnList.AsEnumerable();
         }
