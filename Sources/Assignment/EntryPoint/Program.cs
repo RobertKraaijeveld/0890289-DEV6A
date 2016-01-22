@@ -369,11 +369,11 @@ namespace EntryPoint
         ***********************/
 
         /*************************
-        * GRAPH AND FLOYD-WARSHAL
+        * GRAPH 
         **************************/
 
         //Id and Road Connection
-        static Dictionary<int, Vector2> createRoadVertices(List<Tuple<Vector2, Vector2>> roads)
+        static Dictionary<int, Vector2> createGraph(List<Tuple<Vector2, Vector2>> roads)
         {
             Dictionary<int, Vector2> cachedDictionary = new Dictionary<int, Vector2>();
             int key = 0;
@@ -390,8 +390,46 @@ namespace EntryPoint
         }
 
 
-        private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute
+
+
+        private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
+        {
+            Dictionary<int, Vector2> allNodes = createGraph(roads.ToList);
+            int amountOfNodes = allNodes.Count();
+
+            //Create adjacency matrix and set staring values and set nodes as unvisited
+            float[,] distanceMatrix = new float[amountOfNodes,amountOfNodes];
+            Queue<int> unVisitedNodes = new Queue<int>();
+            int currentNode;
+
+            for (int row = 0; row < amountOfNodes; row++)
+            {
+                for (int column = 0; column < amountOfNodes; column++)
+                {
+                    //Make sure startingbuildings distance to startingbuilding is set to 0 instead of infinity, and that it is marked as current
+                    if (allNodes.ElementAt(row) == startingBuilding && allNodes.ElementAt(column) == startingBuilding)
+                    {
+                        //row =  a certain node.
+                        //row->column = the distance from a certain node to another row
+                        currentNode = distanceMatrix[row];
+                        distanceMatrix[row][column] = 0;
+                    }
+                    else
+                    {
+                        unVisitedNodes.Enqueue(distanceMatrix[row]);
+                        distanceMatrix[row][column] = float.PositiveInfinity;
+                    }
+                }
+            }
+
+            while (unVisitedNodes.Count > 0)
+            {
+                
+            }
+
+
+        }
 
 
 
@@ -432,17 +470,9 @@ namespace EntryPoint
 
 
         private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
-            Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
+        Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            var startingRoad = roads.Where(x => x.Item1.Equals(startingBuilding)).First();
-            List<Tuple<Vector2, Vector2>> fakeBestPath = new List<Tuple<Vector2, Vector2>>() { startingRoad };
-            var prevRoad = startingRoad;
-            for (int i = 0; i < 30; i++)
-            {
-                prevRoad = (roads.Where(x => x.Item1.Equals(prevRoad.Item2)).OrderBy(x => Vector2.Distance(x.Item2, destinationBuilding)).First());
-                fakeBestPath.Add(prevRoad);
-            }
-            return fakeBestPath;
+            Dijkstras(startingBuilding, destinationBuilding, roads);
         }
 
         private static IEnumerable<IEnumerable<Tuple<Vector2, Vector2>>> FindRoutesToAll(Vector2 startingBuilding, 
