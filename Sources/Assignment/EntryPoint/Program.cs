@@ -368,8 +368,18 @@ namespace EntryPoint
         * END TREES
         ***********************/
 
+
         /*************************
-        * GRAPH 
+        * GRAPH  HELPERS
+        **************************/
+
+        static int getIndexOfSmallestItem(float[] array)
+        {
+            return Array.IndexOf(array, array.Min());
+        }
+
+        /*************************
+        * GRAPH SETUP
         **************************/
 
         //Id and Road Connection
@@ -389,44 +399,79 @@ namespace EntryPoint
             return cachedDictionary;
         }
 
-
-
-
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            Dictionary<int, Vector2> allNodes = createGraph(roads.ToList);
+            List<Tuple<Vector2, Vector2>> pairsOfNodes = roads.ToList();
+
+            Dictionary<int, Vector2> allNodes = createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count();
 
             //Create adjacency matrix and set staring values and set nodes as unvisited
-            float[,] distanceMatrix = new float[amountOfNodes,amountOfNodes];
-            Queue<int> unVisitedNodes = new Queue<int>();
-            int currentNode;
+            bool[,] neighbourMatrix = new bool[amountOfNodes,amountOfNodes];
+            List<int> unVisitedNodes = new List<int>();
+
+            float[] distancesToStartingNode = new float[amountOfNodes];
 
             for (int row = 0; row < amountOfNodes; row++)
             {
                 for (int column = 0; column < amountOfNodes; column++)
                 {
-                    //Make sure startingbuildings distance to startingbuilding is set to 0 instead of infinity, and that it is marked as current
-                    if (allNodes.ElementAt(row) == startingBuilding && allNodes.ElementAt(column) == startingBuilding)
+                    //when traversing the nodes dictionary, if we come across the startingbuilding at both the row and column,
+                    //We set it to NOT be its own neighbour, put it into the set of unvisited nodes and set the distance to itself to 0.
+                    if (allNodes.ElementAt(row).Value == startingBuilding && allNodes.ElementAt(column).Value == startingBuilding)
                     {
-                        //row =  a certain node.
-                        //row->column = the distance from a certain node to another row
-                        currentNode = distanceMatrix[row];
-                        distanceMatrix[row][column] = 0;
+                        //Put into unvisited queue
+                        unVisitedNodes.Add(allNodes.ElementAt(row).Key);
+                        //Set as not being a neighbour of itself
+                        neighbourMatrix[row, column] = false;
+                        //set startingbuildings distance to itself to 0
+                        distancesToStartingNode[column] = 0;
                     }
+                    //Any other node is also added to the unvisitedNodes queue, and its distance to the startingNode is set to infinite.
                     else
                     {
-                        unVisitedNodes.Enqueue(distanceMatrix[row]);
-                        distanceMatrix[row][column] = float.PositiveInfinity;
+                        unVisitedNodes.Add(allNodes.ElementAt(row).Key);
+                        distancesToStartingNode[row] = float.PositiveInfinity;
+
+                        //if the node in row and the node in column are a pair in the roads tuple, they are neighbours!
+                        Tuple<Vector2, Vector2> currentNodePair = new Tuple<Vector2,Vector2>(allNodes.ElementAt(row).Value, allNodes.ElementAt(column).Value);
+
+                        if (pairsOfNodes.Contains(currentNodePair))
+                            neighbourMatrix[row, column] = true;
+                        else
+                            neighbourMatrix[row, column] = false;
                     }
                 }
             }
 
+            /*************************
+            * END GRAPH SETUP
+            **************************/
+            /*************************
+            * ACTUAL GRAPH ALGO
+            **************************/
+
             while (unVisitedNodes.Count > 0)
             {
-                
+                //start with the currentNode, the node that has the smallest distance to the starting node.
+                int indexForCurrentNode = getIndexOfSmallestItem(distancesToStartingNode);
+                Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Value;
+                unVisitedNodes.Remove(indexForCurrentNode);
+
+                List<Vector2> currentNodesNeighbours = new List<Vector2>();
+                //Loop through all the elemements in the currentNodes' row
+                for(int i = 0; i < neighbourMatrix.Length; i++)
+                {
+                    //currentNode is neighbour with node at index i, so add the corresponding Node in allNodes to the list.
+                    if (neighbourMatrix[indexForCurrentNode, i] == true)
+                        currentNodesNeighbours.Add(allNodes.ElementAt(i).Value);
+                }
+               
+
+
             }
+
 
 
         }
@@ -436,7 +481,6 @@ namespace EntryPoint
         /**********************
         * ASSIGNMENT METHODS 
         ***********************/
-
 
         private static IEnumerable<IEnumerable<Vector2>> FindSpecialBuildingsWithinDistanceFromHouse(
             IEnumerable<Vector2> specialBuildings, 
@@ -467,7 +511,6 @@ namespace EntryPoint
         /********************
         * END OF TREES
         *********************/
-
 
         private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
         Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
