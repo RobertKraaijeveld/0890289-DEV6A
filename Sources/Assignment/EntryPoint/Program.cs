@@ -378,23 +378,37 @@ namespace EntryPoint
             return Array.IndexOf(array, array.Min());
         }
 
+        static int getKeyForValue(Dictionary<Vector2, int> d, Vector2 searchValue)
+        {
+            //find the neighbour we are currently looking at
+            foreach (var item in d)
+            {
+                //get its key and use that as the index for distances, where we will set the distance from that node to source to our new distance.
+                if (item.Key == searchValue)
+                    return item.Value;
+                else
+                    return 0;
+            }
+            return 0;
+        }
+            
         /*************************
         * GRAPH SETUP
-        **************************/
+        ***************************/
 
         //Id and Road Connection
-        static Dictionary<int, Vector2> createGraph(List<Tuple<Vector2, Vector2>> roads)
+        static Dictionary<Vector2, int> createGraph(List<Tuple<Vector2, Vector2>> roads)
         {
-            Dictionary<int, Vector2> cachedDictionary = new Dictionary<int, Vector2>();
+            Dictionary<Vector2, int> cachedDictionary = new Dictionary<Vector2, int>();
             int key = 0;
 
             foreach (Tuple<Vector2, Vector2> t in roads)
             {
                 //We dont want nor need any double roadpoints in our dictionary, because it is unneccessary and takes time.
-                if(cachedDictionary.ContainsValue(t.Item1) == false)
-                    cachedDictionary.Add(key++, t.Item1);
-                if(cachedDictionary.ContainsValue(t.Item2) == false)
-                    cachedDictionary.Add(key++, t.Item2);
+                if(cachedDictionary.ContainsKey(t.Item1) == false)
+                    cachedDictionary.Add(t.Item1, key++);
+                if(cachedDictionary.ContainsKey(t.Item2) == false)
+                    cachedDictionary.Add(t.Item2, key++);
             }
             return cachedDictionary;
         }
@@ -402,48 +416,54 @@ namespace EntryPoint
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            List<Tuple<Vector2, Vector2>> pairsOfNodes = roads.ToList();
-
-            Dictionary<int, Vector2> allNodes = createGraph(roads.ToList());
+            Dictionary<Vector2, int> allNodes = createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count();
 
-            //Create adjacency matrix and set staring values and set nodes as unvisited
-            bool[,] neighbourMatrix = new bool[amountOfNodes,amountOfNodes];
+            //Create adjacency matrix and set staring values and set nodes as unvisited.
+            //Our matrixs' rows are made up of arrays of ints and will only contain neighbours, drastically improving performance
+            int[][] neighBoursMatrix = new int[amountOfNodes][];
             List<int> unVisitedNodes = new List<int>();
 
             float[] distancesToStartingNode = new float[amountOfNodes];
 
             for (int row = 0; row < amountOfNodes; row++)
             {
-                for (int column = 0; column < amountOfNodes; column++)
+               for (int column = 0; column < amountOfNodes; column++)
                 {
                     //when traversing the nodes dictionary, if we come across the startingbuilding at both the row and column,
-                    //We set it to NOT be its own neighbour, put it into the set of unvisited nodes and set the distance to itself to 0.
-                    if (allNodes.ElementAt(row).Value == startingBuilding && allNodes.ElementAt(column).Value == startingBuilding)
+                    //We put it into the set of unvisited nodes and set the distance to itself to 0.
+                    if (allNodes.ElementAt(row).Key == startingBuilding && allNodes.ElementAt(column).Key == startingBuilding)
                     {
-                        //Put into unvisited queue
-                        unVisitedNodes.Add(allNodes.ElementAt(row).Key);
-                        //Set as not being a neighbour of itself
-                        neighbourMatrix[row, column] = false;
+                        //Put into unvisited list
+                        unVisitedNodes.Add(allNodes.ElementAt(row).Value);
                         //set startingbuildings distance to itself to 0
                         distancesToStartingNode[column] = 0;
                     }
-                    //Any other node is also added to the unvisitedNodes queue, and its distance to the startingNode is set to infinite.
+                    //Any other node is also added to the unvisitedNodes lists, and its distance to the startingNode is set to infinite.
                     else
                     {
-                        unVisitedNodes.Add(allNodes.ElementAt(row).Key);
+                        unVisitedNodes.Add(allNodes.ElementAt(row).Value);
                         distancesToStartingNode[row] = float.PositiveInfinity;
+                    }
+               }
+            }
 
-                        //if the node in row and the node in column are a pair in the roads tuple, they are neighbours!
-                        Tuple<Vector2, Vector2> currentNodePair = new Tuple<Vector2,Vector2>(allNodes.ElementAt(row).Value, allNodes.ElementAt(column).Value);
+            foreach (var cachedNode in allNodes)
+            {
+                //This list represents the 'row' in the matrix. It only contains neighbours.
+                List<int> neighBoursRow = new List<int>();
 
-                        if (pairsOfNodes.Contains(currentNodePair))
-                            neighbourMatrix[row, column] = true;
-                        else
-                            neighbourMatrix[row, column] = false;
+                foreach (var roadSection in roads)
+                {
+                    if (cachedNode.Key == roadSection.Item1)
+                    {
+                        neighBoursRow.Add(allNodes[roadSection.Item2]);
                     }
                 }
+                //Neighboursrow is the array in dimension 2 at the index of the currentNode in dimension 1
+                neighBoursMatrix[cachedNode.Value] = neighBoursRow.ToArray();
             }
+
 
             /*************************
             * END GRAPH SETUP
@@ -451,28 +471,54 @@ namespace EntryPoint
             /*************************
             * ACTUAL GRAPH ALGO
             **************************/
+            List<Tuple<Vector2, Vector2>> finalRoadPieces = new List<Tuple<Vector2, Vector2>>();
 
+            //We go through all unvisited nodes
             while (unVisitedNodes.Count > 0)
             {
                 //start with the currentNode, the node that has the smallest distance to the starting node.
                 int indexForCurrentNode = getIndexOfSmallestItem(distancesToStartingNode);
-                Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Value;
+                Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Key;
+
+                //Remove the node we are looking at from the unvisited set.
                 unVisitedNodes.Remove(indexForCurrentNode);
 
                 List<Vector2> currentNodesNeighbours = new List<Vector2>();
-                //Loop through all the elemements in the currentNodes' row
-                for(int i = 0; i < neighbourMatrix.Length; i++)
+                foreach(int[] rowArray in neighBoursMatrix)
                 {
-                    //currentNode is neighbour with node at index i, so add the corresponding Node in allNodes to the list.
-                    if (neighbourMatrix[indexForCurrentNode, i] == true)
-                        currentNodesNeighbours.Add(allNodes.ElementAt(i).Value);
+                    foreach (int neighbour in rowArray)
+                    {
+                        currentNodesNeighbours.Add(allNodes.ElementAt(neighbour).Key);
+                    }
                 }
-               
+                //Find the array under indexForCurrentNode.
+                //Loop through all the intvalues in the allNodes dictionary, add the vectors of these nodes to the list above.
 
+                //TODO: Connect this with neighbour matrix instead               
+                foreach (Vector2 neighbour in currentNodesNeighbours)
+                {
+                    //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
+                    float newPotentialPathLength = distancesToStartingNode.ElementAt(indexForCurrentNode) + Vector2.Distance(currentNode, neighbour);
 
+                    //if the new path, including the detour through the neighbour is shorter than the direct distance between the neighbour and start,
+                    //as contained within distancesToStartingNode, we should update the potentialpath.
+                    if (newPotentialPathLength < distancesToStartingNode.Sum())
+                    {
+                        //find the neighbour we are currently looking at
+                        //get its key and use that as the index for distances, where we will set the distance from that node to source to our new distance.
+                        int indexForNeighbour = getKeyForValue(allNodes, neighbour);   
+                        distancesToStartingNode[indexForNeighbour] = newPotentialPathLength;
+                        //Finally, we add the currentNode and its neighbour to the resultlist.                       
+                        finalRoadPieces.Add(new Tuple<Vector2, Vector2>(currentNode, neighbour));
+                    }
+                }
             }
 
+            return finalRoadPieces.AsEnumerable();
 
+            /*************************
+            * END ACTUAL GRAPH ALGO
+            **************************/
 
         }
 
@@ -515,7 +561,7 @@ namespace EntryPoint
         private static IEnumerable<Tuple<Vector2, Vector2>> FindRoute(Vector2 startingBuilding, 
         Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            Dijkstras(startingBuilding, destinationBuilding, roads);
+            return Dijkstras(startingBuilding, destinationBuilding, roads);
         }
 
         private static IEnumerable<IEnumerable<Tuple<Vector2, Vector2>>> FindRoutesToAll(Vector2 startingBuilding, 
