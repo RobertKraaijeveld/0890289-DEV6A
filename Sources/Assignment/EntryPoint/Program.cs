@@ -373,11 +373,39 @@ namespace EntryPoint
         * GRAPH  HELPERS
         **************************/
 
-        static int getIndexOfSmallestItem(float[] array)
+        public class writableTuple<T1, T2>
         {
-            return Array.IndexOf(array, array.Min());
+            public T1 Item1;
+            public T2 Item2;
+
+            public writableTuple(T1 Item1Param, T2 Item2Param)
+            {
+                Item1 = Item1Param; 
+                Item2 = Item2Param;
+            }
         }
 
+
+        //Aanpassen voor gebruik in list of tuples of ints and floats
+        static int getIndexOfSmallestItem(List<writableTuple<int, float>> list)
+        {
+            List<float> distancesList = new List<float>();
+            foreach (writableTuple<int, float> tuple in list)
+            {
+                distancesList.Add(tuple.Item2);
+            }
+            //De index van het kleinste element in de distancelist, staat gelijk aan de index van het de tuple met kleinste floatvalue in list
+            return distancesList.IndexOf(distancesList.Min());
+        }
+
+        static void setActualDistanceOfNeighbour(List<writableTuple<int, float>> list, int tupleToBeModified, float valueToBeSet)
+        {
+            foreach (writableTuple<int, float> tuple in list)
+            {
+                if (tuple.Item1 == tupleToBeModified)
+                    tuple.Item2 = valueToBeSet;
+            }
+        }
 
         /*************************
         * GRAPH SETUP
@@ -403,24 +431,27 @@ namespace EntryPoint
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            Console.WriteLine(startingBuilding);
+            Console.WriteLine("Startingbuilding: " + startingBuilding);
+
             Dictionary<Vector2, int> allNodes = createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count();
 
             //Create adjacency matrix and set staring values and set nodes as unvisited.
             //Our matrixs' rows are made up of arrays of ints and will only contain neighbours, drastically improving performance
             int[][] neighBoursMatrix = new int[amountOfNodes][];
-            List<int> unVisitedNodes = new List<int>();
 
-            float[] distancesToStartingNode = new float[amountOfNodes];
-
+            List<writableTuple<int, float>> unVisitedNodesAndDistances = new List<writableTuple<int, float>>();
+           
             foreach (var cachedNode in allNodes)
             {
                 //This list represents the 'row' in the matrix. It only contains neighbours.
                 List<int> neighBoursRow = new List<int>();
 
+                //Add each non-starting node to unvisited nodes, set its distance to infinite
                 if (cachedNode.Key != startingBuilding)
-                    unVisitedNodes.Add(cachedNode.Value);
+                    unVisitedNodesAndDistances.Add(new writableTuple<int, float>(cachedNode.Value, float.PositiveInfinity));
+                else
+                    unVisitedNodesAndDistances.Add(new writableTuple<int, float>(cachedNode.Value, 0));
 
                 foreach (var roadSection in roads)
                 {
@@ -429,11 +460,6 @@ namespace EntryPoint
                     {
                         neighBoursRow.Add(allNodes[roadSection.Item2]);
                     }
-                    //Make sure startingbuildings distance is 0
-                    else if (cachedNode.Key == startingBuilding)
-                        distancesToStartingNode[cachedNode.Value] = 0;
-                    else
-                        distancesToStartingNode[cachedNode.Value] = float.PositiveInfinity;
                 }
                 //Neighboursrow is the array in dimension 2 at the index of the currentNode in dimension 1
                 neighBoursMatrix[cachedNode.Value] = neighBoursRow.ToArray();
@@ -451,21 +477,21 @@ namespace EntryPoint
             List<Tuple<Vector2, Vector2>> finalRoadPieces = new List<Tuple<Vector2, Vector2>>();
 
             //We go through all unvisited nodes
-            while (unVisitedNodes.Count > 0)
+            while (unVisitedNodesAndDistances.Count > 0)
             {
                 //this should steadily decrease
-                Console.WriteLine("Amount of unvisited nodes: " + unVisitedNodes.Count);
+                Console.WriteLine("Amount of unvisited nodes: " + unVisitedNodesAndDistances.Count);
 
                 //start with the currentNode, the node that has the smallest distance to the starting node.
-                int indexForCurrentNode = getIndexOfSmallestItem(distancesToStartingNode);
-
+                int indexForCurrentNode = getIndexOfSmallestItem(unVisitedNodesAndDistances);
+                Console.WriteLine("Index for current node: " + indexForCurrentNode);
                 Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Key;
 
                 //The following int can be seen as a pointer to the currentNode in the neighbourmatrix.
                 int currentNodeIdentifier = allNodes.ElementAt(indexForCurrentNode).Value;
 
                 //Remove the node we are looking at from the unvisited set.   
-                unVisitedNodes.RemoveAt(currentNodeIdentifier);
+                unVisitedNodesAndDistances.RemoveAt(indexForCurrentNode);
                 Console.WriteLine("Starting node: " + currentNode);
                 
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
@@ -483,17 +509,21 @@ namespace EntryPoint
                     //Get the vector associated with this neighbour. (since vectors are keys)
                     Vector2 neighbourVector = allNodes.FirstOrDefault(x => x.Value == neighBourIdentifier).Key;
                     int indexForNeighbour = allNodes[neighbourVector];  
+
+                    //EVALUATE the actual distance to the neighbours. Set Item2 of the tuple that has Item1==neighbouridentifier to the actual distance
+                    setActualDistanceOfNeighbour(unVisitedNodesAndDistances, neighBourIdentifier, Vector2.Distance(startingBuilding, neighbourVector)); 
+                    float neighBoursDistance = Vector2.Distance(startingBuilding, neighbourVector);
                     Console.WriteLine("Neighbour node: " + neighbourVector);
 
-                    //Add the length from our currentNode to the start + the distance between currentNode and the neighbour, update the distance
-                    float newPotentialPathLength = distancesToStartingNode.ElementAt(currentNodeIdentifier) + Vector2.Distance(currentNode, neighbourVector);
-                    Console.WriteLine("Path length inc. neighbour: " + newPotentialPathLength + ", path at distancesToStartingNode: " + distancesToStartingNode[neighBourIdentifier]);
-                    distancesToStartingNode[indexForNeighbour] = newPotentialPathLength;
+                    //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
+                    float newPotentialPathLength = Vector2.Distance(startingBuilding, currentNode) + Vector2.Distance(currentNode, neighbourVector);
+                    Console.WriteLine("Path length inc. neighbour: " + newPotentialPathLength + ", path at distancesToStartingNode: " + neighBoursDistance);
 
                     //if the new path, including the detour through the neighbour is shorter than the direct distance between the neighbour and start,
                     //as contained within distancesToStartingNode, we should update the potentialpath.
-                    if (newPotentialPathLength < distancesToStartingNode[neighBourIdentifier])
+                    if (newPotentialPathLength < neighBoursDistance)
                     {
+                        Console.WriteLine("Found a beter path!");
                         //find the neighbour we are currently looking at
                         //get its value(an integer) and use that as the index for distances, where we will set the distance from that node to source to our new distance
                         //Finally, we add the currentNode and its neighbour to the resultlist.                       
