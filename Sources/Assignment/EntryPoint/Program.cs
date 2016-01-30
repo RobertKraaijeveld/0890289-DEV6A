@@ -385,6 +385,31 @@ namespace EntryPoint
             }
         }
 
+        //PATHFINDERS
+        public static List<Tuple<Vector2, Vector2>> createPathListReverse(List<Vector2> nodes)
+        {
+            List<Tuple<Vector2, Vector2>> result = new List<Tuple<Vector2, Vector2>>();
+
+            // For each node in the nodelist
+            for (int i = nodes.Count() - 1; i > 0; i--)
+            {
+                result.Add(new Tuple<Vector2, Vector2>(nodes[i - 1], nodes[i]));
+            }
+            return result;
+        }
+
+        static void pathcalc(int[] pred, int startbuilding, int curbuilding, List<int> result)
+        {
+            if (pred[curbuilding] != startbuilding)
+            {
+                result.Add(pred[curbuilding]);
+                pathcalc(pred, startbuilding, pred[curbuilding], result);
+            }
+            else
+            {
+                result.Add(pred[startbuilding]);
+            }
+        }
 
         //Aanpassen voor gebruik in list of tuples of ints and floats
         static int getIndexOfSmallestItem(List<writableTuple<int, float>> list)
@@ -434,11 +459,13 @@ namespace EntryPoint
             Console.WriteLine("Startingbuilding: " + startingBuilding);
 
             Dictionary<Vector2, int> allNodes = createGraph(roads.ToList());
-            int amountOfNodes = allNodes.Count();
+            int amountOfNodes = allNodes.Count;
 
             //Create adjacency matrix and set staring values and set nodes as unvisited.
             //Our matrixs' rows are made up of arrays of ints and will only contain neighbours, drastically improving performance
             int[][] neighBoursMatrix = new int[amountOfNodes][];
+            int[] pred = new int[amountOfNodes];
+            pred[allNodes[startingBuilding]] = allNodes[startingBuilding];
 
             List<writableTuple<int, float>> unVisitedNodesAndDistances = new List<writableTuple<int, float>>();
            
@@ -491,7 +518,7 @@ namespace EntryPoint
                 int currentNodeIdentifier = allNodes.ElementAt(indexForCurrentNode).Value;
 
                 //Remove the node we are looking at from the unvisited set.   
-                unVisitedNodesAndDistances.RemoveAt(indexForCurrentNode);
+                unVisitedNodesAndDistances.RemoveAt(currentNodeIdentifier);
                 Console.WriteLine("Starting node: " + currentNode);
                 
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
@@ -527,11 +554,26 @@ namespace EntryPoint
                         //find the neighbour we are currently looking at
                         //get its value(an integer) and use that as the index for distances, where we will set the distance from that node to source to our new distance
                         //Finally, we add the currentNode and its neighbour to the resultlist.                       
-                        finalRoadPieces.Add(new Tuple<Vector2, Vector2>(currentNode, neighbourVector));
                     }
                 }
             }
-            return finalRoadPieces.AsEnumerable();
+
+
+            List<int> pred_results = new List<int>();
+            pred_results.Add(allNodes[destinationBuilding]);
+            pathcalc(pred, allNodes[startingBuilding], allNodes[destinationBuilding], pred_results);
+
+            List<Vector2> vectors = new List<Vector2>();
+
+            for (int i = 0; i < pred_results.Count; i++)
+            {
+                vectors.Add(allNodes.FirstOrDefault(x => x.Value == pred_results[i]).Key);
+            }
+
+            var path = createPathListReverse(vectors);
+
+            return path;
+
 
             /*************************
             * END ACTUAL GRAPH ALGO
