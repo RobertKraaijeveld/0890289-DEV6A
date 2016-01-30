@@ -403,6 +403,7 @@ namespace EntryPoint
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
+            Console.WriteLine(startingBuilding);
             Dictionary<Vector2, int> allNodes = createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count();
 
@@ -413,13 +414,13 @@ namespace EntryPoint
 
             float[] distancesToStartingNode = new float[amountOfNodes];
 
-            Console.WriteLine("Starting to fill matrix");
-            Console.WriteLine(DateTime.Now);
             foreach (var cachedNode in allNodes)
             {
                 //This list represents the 'row' in the matrix. It only contains neighbours.
                 List<int> neighBoursRow = new List<int>();
-                unVisitedNodes.Add(cachedNode.Value);
+
+                if (cachedNode.Key != startingBuilding)
+                    unVisitedNodes.Add(cachedNode.Value);
 
                 foreach (var roadSection in roads)
                 {
@@ -429,21 +430,21 @@ namespace EntryPoint
                         neighBoursRow.Add(allNodes[roadSection.Item2]);
                     }
                     //Make sure startingbuildings distance is 0
-                    //else if (cachedNode.Key == startingBuilding)
-                        //distancesToStartingNode[cachedNode.Value] = 0;
+                    else if (cachedNode.Key == startingBuilding)
+                        distancesToStartingNode[cachedNode.Value] = 0;
                     else
                         distancesToStartingNode[cachedNode.Value] = float.PositiveInfinity;
                 }
                 //Neighboursrow is the array in dimension 2 at the index of the currentNode in dimension 1
                 neighBoursMatrix[cachedNode.Value] = neighBoursRow.ToArray();
             }
-            Console.WriteLine("Amount of nodes: " + neighBoursMatrix.Count());
-            Console.WriteLine("Amount of UNVISITED nodes: " + unVisitedNodes.Count);
-            Console.WriteLine("Amount of distances: " + distancesToStartingNode.Count());
+
 
             /*************************
             * END GRAPH SETUP
             **************************/
+
+           
             /*************************
             * ACTUAL GRAPH ALGO
             **************************/
@@ -452,34 +453,35 @@ namespace EntryPoint
             //We go through all unvisited nodes
             while (unVisitedNodes.Count > 0)
             {
-                Console.WriteLine("Number of nodes left to visit: " + unVisitedNodes.Count);
-
                 //start with the currentNode, the node that has the smallest distance to the starting node.
                 int indexForCurrentNode = getIndexOfSmallestItem(distancesToStartingNode);
+
                 Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Key;
+
                 //The following int can be seen as a pointer to the currentNode in the neighbourmatrix.
                 int currentNodeIdentifier = allNodes.ElementAt(indexForCurrentNode).Value;
 
+                //FAULT
                 //Remove the node we are looking at from the unvisited set.   
-                 unVisitedNodes.RemoveAt(currentNodeIdentifier);
-                Console.WriteLine("Node that was removed from unvisited: " + currentNodeIdentifier);
+                unVisitedNodes.RemoveAt(currentNodeIdentifier);
+                Console.WriteLine("Starting node: " + currentNode);
+
 
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
                 List<int> currentNodesNeighbours = new List<int>();
                 int[] row = neighBoursMatrix[currentNodeIdentifier];
 
+
                 foreach (int neighBourIdentifier in row)
                 {
-                    if (allNodes.ContainsValue(neighBourIdentifier))
-                        currentNodesNeighbours.Add(allNodes[currentNode]);
+                    currentNodesNeighbours.Add(neighBourIdentifier);
                 }
-                
-                        
+                    
                 foreach (int neighBourIdentifier in currentNodesNeighbours)
                 {
                     //Get the vector associated with this neighbour. (since vectors are keys)
                     Vector2 neighbourVector = allNodes.FirstOrDefault(x => x.Value == neighBourIdentifier).Key;
-                    
+                    Console.WriteLine("Neighbour node: " + neighbourVector);
                     //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
                     float newPotentialPathLength = distancesToStartingNode.ElementAt(indexForCurrentNode) + Vector2.Distance(currentNode, neighbourVector);
 
