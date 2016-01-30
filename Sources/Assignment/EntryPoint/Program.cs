@@ -453,6 +453,9 @@ namespace EntryPoint
             //We go through all unvisited nodes
             while (unVisitedNodes.Count > 0)
             {
+                //this should steadily decrease
+                Console.WriteLine("Amount of unvisited nodes: " + unVisitedNodes.Count);
+
                 //start with the currentNode, the node that has the smallest distance to the starting node.
                 int indexForCurrentNode = getIndexOfSmallestItem(distancesToStartingNode);
 
@@ -461,12 +464,10 @@ namespace EntryPoint
                 //The following int can be seen as a pointer to the currentNode in the neighbourmatrix.
                 int currentNodeIdentifier = allNodes.ElementAt(indexForCurrentNode).Value;
 
-                //FAULT
                 //Remove the node we are looking at from the unvisited set.   
                 unVisitedNodes.RemoveAt(currentNodeIdentifier);
                 Console.WriteLine("Starting node: " + currentNode);
-
-
+                
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
                 List<int> currentNodesNeighbours = new List<int>();
                 int[] row = neighBoursMatrix[currentNodeIdentifier];
@@ -481,9 +482,13 @@ namespace EntryPoint
                 {
                     //Get the vector associated with this neighbour. (since vectors are keys)
                     Vector2 neighbourVector = allNodes.FirstOrDefault(x => x.Value == neighBourIdentifier).Key;
+                    int indexForNeighbour = allNodes[neighbourVector];  
                     Console.WriteLine("Neighbour node: " + neighbourVector);
-                    //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
-                    float newPotentialPathLength = distancesToStartingNode.ElementAt(indexForCurrentNode) + Vector2.Distance(currentNode, neighbourVector);
+
+                    //Add the length from our currentNode to the start + the distance between currentNode and the neighbour, update the distance
+                    float newPotentialPathLength = distancesToStartingNode.ElementAt(currentNodeIdentifier) + Vector2.Distance(currentNode, neighbourVector);
+                    Console.WriteLine("Path length inc. neighbour: " + newPotentialPathLength + ", path at distancesToStartingNode: " + distancesToStartingNode[neighBourIdentifier]);
+                    distancesToStartingNode[indexForNeighbour] = newPotentialPathLength;
 
                     //if the new path, including the detour through the neighbour is shorter than the direct distance between the neighbour and start,
                     //as contained within distancesToStartingNode, we should update the potentialpath.
@@ -491,8 +496,6 @@ namespace EntryPoint
                     {
                         //find the neighbour we are currently looking at
                         //get its value(an integer) and use that as the index for distances, where we will set the distance from that node to source to our new distance
-                        int indexForNeighbour = allNodes[neighbourVector];   
-                        distancesToStartingNode[indexForNeighbour] = newPotentialPathLength;
                         //Finally, we add the currentNode and its neighbour to the resultlist.                       
                         finalRoadPieces.Add(new Tuple<Vector2, Vector2>(currentNode, neighbourVector));
                     }
