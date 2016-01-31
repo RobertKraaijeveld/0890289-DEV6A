@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace EntryPoint
 {
@@ -315,17 +316,17 @@ namespace EntryPoint
                     }  
                     else if (root.getVector().X >= (houseVector.X + radius))
                     {
-                        Console.WriteLine(root.getVector().X + " is bigger than " + (houseVector.X + radius)  + " so we go left");
+                        Debug.WriteLine(root.getVector().X + " is bigger than " + (houseVector.X + radius)  + " so we go left");
                         rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
                     }
                     else if (root.getVector().X <= (houseVector.X - radius))
                     {
-                        Console.WriteLine(root.getVector().X + " is smaller than " + (houseVector.X + radius) + " so we go right");
+                        Debug.WriteLine(root.getVector().X + " is smaller than " + (houseVector.X + radius) + " so we go right");
                         rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }
                     else
                     {
-                        Console.WriteLine("Not a single matching node found");
+                        Debug.WriteLine("Not a single matching node found");
                     }
                 }
                 else 
@@ -342,23 +343,23 @@ namespace EntryPoint
                     }
                     else if (root.getVector().Y > (houseVector.Y + radius) )
                     {
-                        Console.WriteLine(root.getVector().Y + " is bigger than " + (houseVector.Y + radius) + " so we go left");
+                        Debug.WriteLine(root.getVector().Y + " is bigger than " + (houseVector.Y + radius) + " so we go left");
                         rangeSearch(root.getLeftMTree(), houseVector, radius, returnList);
                     }
                     else if (root.getVector().Y < (houseVector.Y - radius))
                     {
-                        Console.WriteLine(root.getVector().Y + " is smaller than " + (houseVector.Y + radius) + " so we go right");
+                        Debug.WriteLine(root.getVector().Y + " is smaller than " + (houseVector.Y + radius) + " so we go right");
                         rangeSearch(root.getRightMTree(), houseVector, radius, returnList);
                     }
                     else
                     {
-                        Console.WriteLine("Not a single matching node found");
+                        Debug.WriteLine("Not a single matching node found");
                     }
                 }
             }
             else
             {
-                Console.WriteLine("Empty tree");
+                Debug.WriteLine("Empty tree");
             }
         }
             
@@ -398,19 +399,23 @@ namespace EntryPoint
             return result;
         }
 
-        static void pathcalc(int[] pred, int startbuilding, int curbuilding, List<int> result)
+
+
+        static void pathcalc(int[] pred, int start, int destination, List<int> result)
+
         {
-            if (pred[curbuilding] != startbuilding)
+            //Fill our returnlist with the part of the path that goes between startingBuilding and destinationBuilding
+            int currentbuilding = destination;
+
+            while (currentbuilding != start)
             {
-                Console.WriteLine(curbuilding);
-                result.Add(pred[curbuilding]);
-                pathcalc(pred, startbuilding, pred[curbuilding], result);
-            }
-            else
-            {
-                result.Add(pred[startbuilding]);
+                result.Add(pred[currentbuilding]);
+                Debug.WriteLine("Pathcalcing node no. " + currentbuilding);
+                currentbuilding = pred[currentbuilding];
             }
         }
+
+
 
         //Aanpassen voor gebruik in list of tuples of ints and floats
         static int getSmallestItem(List<writableTuple<int, float>> list)
@@ -468,12 +473,9 @@ namespace EntryPoint
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
         (Vector2 startingBuilding, Vector2 destinationBuilding, IEnumerable<Tuple<Vector2, Vector2>> roads)
         {
-            Console.WriteLine("Startingbuilding: " + startingBuilding);
-
             createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count;
 
-            Console.WriteLine("Total amount of nodes: " + amountOfNodes);
 
             //Create adjacency matrix and set staring values and set nodes as unvisited.
             //Our matrixs' rows are made up of arrays of ints and will only contain neighbours, drastically improving performance
@@ -512,7 +514,7 @@ namespace EntryPoint
                 //Neighboursrow is the array in dimension 2 at the index of the currentNode in dimension 1
                 neighBoursMatrix[cachedNode.Value] = neighBoursRow.ToArray();
             }
-
+            Debug.WriteLine("Done setting up.");
 
             /*************************
             * END GRAPH SETUP
@@ -527,14 +529,12 @@ namespace EntryPoint
             //We go through all unvisited nodes
             while (unVisitedNodesAndDistances.Count > 0)
             {
-                //this should steadily decrease
-                Console.WriteLine("Amount of unvisited nodes: " + unVisitedNodesAndDistances.Count);
 
                 //start with the currentNode, the node that has the smallest distance to the starting node.
                 int CurrentNodeIdentifier = getSmallestItem(unVisitedNodesAndDistances);
+                Debug.WriteLine("Gotta look at " + unVisitedNodesAndDistances.Count + " More nodes");
                 //Get the key for value currentNodeIdentifier
                 Vector2 currentNode = allNodes.FirstOrDefault(x => x.Value == CurrentNodeIdentifier).Key;
-                Console.WriteLine("Current node id, vector: " + CurrentNodeIdentifier + "," + currentNode);
 
                 
                 //Remove currentNode from unvisitedNodes
@@ -542,56 +542,42 @@ namespace EntryPoint
 
 
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
-                List<int> currentNodesNeighbours = new List<int>();
                 int[] row = neighBoursMatrix[CurrentNodeIdentifier];
-
-
-                foreach (int neighBourIdentifier in row)
-                {
-                    currentNodesNeighbours.Add(neighBourIdentifier);
-                }
-                    
+                List<int> currentNodesNeighbours = row.ToList();
+                                                   
                 foreach (int neighBourIdentifier in currentNodesNeighbours)
                 {
                     //Get the vector associated with this neighbour. (since vectors are keys)
                     Vector2 neighbourVector = allNodes.FirstOrDefault(x => x.Value == neighBourIdentifier).Key;
                     int indexForNeighbour = allNodes[neighbourVector];  
 
-
-
-
-
                     float neighBoursDistance = actualDistances[neighBourIdentifier];
-                    Console.WriteLine("Neighbour node: " + neighbourVector);
 
                     //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
                     float newPotentialPathLength = actualDistances[CurrentNodeIdentifier] + Vector2.Distance(currentNode, neighbourVector);
-                    Console.WriteLine("Path length inc. neighbour: " + newPotentialPathLength + ", path at distancesToStartingNode: " + neighBoursDistance);
-
-                    //EVALUATE the actual distance to the neighbours. Set Item2 of the tuple that has Item1==neighbouridentifier to the actual distance
-                    setActualDistanceOfNeighbour
-                    (unVisitedNodesAndDistances, neighBourIdentifier, 
-                        Vector2.Distance(startingBuilding, neighbourVector)); 
-                    
-                    actualDistances[neighBourIdentifier] = Vector2.Distance(startingBuilding, neighbourVector);
+                   
 
                     //if the new path, including the detour through the neighbour is shorter than the direct distance between the neighbour and start,
                     //as contained within distancesToStartingNode, we should update the potentialpath.
                     if (newPotentialPathLength < neighBoursDistance)
                     {
-                        Console.WriteLine("Found a beter path!");
-                        actualDistances[neighBourIdentifier] = newPotentialPathLength;
+                        setActualDistanceOfNeighbour
+                        (unVisitedNodesAndDistances, neighBourIdentifier, 
+                            Vector2.Distance(startingBuilding, neighbourVector)); 
 
+                        actualDistances[neighBourIdentifier] = newPotentialPathLength;
                         pred[neighBourIdentifier] = CurrentNodeIdentifier;                    
                     }
                 }
             }
 
-
             List<int> pred_results = new List<int>();
             pred_results.Add(allNodes[destinationBuilding]);
 
-            pathcalc(pred, allNodes[startingBuilding], allNodes[destinationBuilding], pred_results);
+            pathcalc(pred, 
+                    allNodes[startingBuilding],
+                    allNodes[destinationBuilding],
+                    pred_results);
 
             List<Vector2> vectors = new List<Vector2>();
 
