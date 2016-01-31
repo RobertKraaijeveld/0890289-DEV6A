@@ -402,6 +402,7 @@ namespace EntryPoint
         {
             if (pred[curbuilding] != startbuilding)
             {
+                Console.WriteLine(curbuilding);
                 result.Add(pred[curbuilding]);
                 pathcalc(pred, startbuilding, pred[curbuilding], result);
             }
@@ -412,7 +413,7 @@ namespace EntryPoint
         }
 
         //Aanpassen voor gebruik in list of tuples of ints and floats
-        static int getIndexOfSmallestItem(List<writableTuple<int, float>> list)
+        static int getSmallestItem(List<writableTuple<int, float>> list)
         {
             List<float> distancesList = new List<float>();
             foreach (writableTuple<int, float> tuple in list)
@@ -420,7 +421,17 @@ namespace EntryPoint
                 distancesList.Add(tuple.Item2);
             }
             //De index van het kleinste element in de distancelist, staat gelijk aan de index van het de tuple met kleinste floatvalue in list
-            return distancesList.IndexOf(distancesList.Min());
+            int nodeWithSmallestDistanceInCache = 
+                allNodes.FirstOrDefault(x => x.Value == list.ElementAt
+                (distancesList.IndexOf(distancesList.Min())).Item1).Value;
+            
+            return nodeWithSmallestDistanceInCache;
+        }
+
+        static void removeSmallestItem(List<writableTuple<int, float>> list, int identifierOfItem)
+        {
+            //Remove each (will be only one) element that matches the lambda predicate.
+            list.RemoveAll(item => item.Item1 == identifierOfItem);
         }
 
         static void setActualDistanceOfNeighbour(List<writableTuple<int, float>> list, int tupleToBeModified, float valueToBeSet)
@@ -436,21 +447,22 @@ namespace EntryPoint
         * GRAPH SETUP
         ***************************/
 
+        static Dictionary<Vector2, int> allNodes = new Dictionary<Vector2, int>();
         //Id and Road Connection
-        static Dictionary<Vector2, int> createGraph(List<Tuple<Vector2, Vector2>> roads)
+        static void createGraph(List<Tuple<Vector2, Vector2>> roads)
         {
-            Dictionary<Vector2, int> cachedDictionary = new Dictionary<Vector2, int>();
-            int key = 0;
-
-            foreach (Tuple<Vector2, Vector2> t in roads)
+            int roadNumber = 0;
+            foreach (var road in roads)
             {
-                //We dont want nor need any double roadpoints in our dictionary, because it is unneccessary and takes time.
-                if(cachedDictionary.ContainsKey(t.Item1) == false)
-                    cachedDictionary.Add(t.Item1, key++);
-                if(cachedDictionary.ContainsKey(t.Item2) == false)
-                    cachedDictionary.Add(t.Item2, key++);
+                if (!allNodes.ContainsKey(road.Item1))
+                {
+                    allNodes.Add(road.Item1, roadNumber++);
+                }
+                if (!allNodes.ContainsKey(road.Item2))
+                {
+                    allNodes.Add(road.Item2, roadNumber++);
+                }
             }
-            return cachedDictionary;
         }
 
         private static IEnumerable<Tuple<Vector2, Vector2>> Dijkstras
@@ -458,14 +470,17 @@ namespace EntryPoint
         {
             Console.WriteLine("Startingbuilding: " + startingBuilding);
 
-            Dictionary<Vector2, int> allNodes = createGraph(roads.ToList());
+            createGraph(roads.ToList());
             int amountOfNodes = allNodes.Count;
+
+            Console.WriteLine("Total amount of nodes: " + amountOfNodes);
 
             //Create adjacency matrix and set staring values and set nodes as unvisited.
             //Our matrixs' rows are made up of arrays of ints and will only contain neighbours, drastically improving performance
             int[][] neighBoursMatrix = new int[amountOfNodes][];
             int[] pred = new int[amountOfNodes];
             pred[allNodes[startingBuilding]] = allNodes[startingBuilding];
+            float[] actualDistances = new float[amountOfNodes];
 
             List<writableTuple<int, float>> unVisitedNodesAndDistances = new List<writableTuple<int, float>>();
            
@@ -476,9 +491,15 @@ namespace EntryPoint
 
                 //Add each non-starting node to unvisited nodes, set its distance to infinite
                 if (cachedNode.Key != startingBuilding)
-                    unVisitedNodesAndDistances.Add(new writableTuple<int, float>(cachedNode.Value, float.PositiveInfinity));
+                {
+                    unVisitedNodesAndDistances.Add(new writableTuple<int, float>(cachedNode.Value, float.MaxValue));
+                    actualDistances[cachedNode.Value] = float.MaxValue;
+                }
                 else
+                {
                     unVisitedNodesAndDistances.Add(new writableTuple<int, float>(cachedNode.Value, 0));
+                    actualDistances[cachedNode.Value] = 0;
+                }
 
                 foreach (var roadSection in roads)
                 {
@@ -501,7 +522,7 @@ namespace EntryPoint
             /*************************
             * ACTUAL GRAPH ALGO
             **************************/
-            List<Tuple<Vector2, Vector2>> finalRoadPieces = new List<Tuple<Vector2, Vector2>>();
+            
 
             //We go through all unvisited nodes
             while (unVisitedNodesAndDistances.Count > 0)
@@ -510,20 +531,19 @@ namespace EntryPoint
                 Console.WriteLine("Amount of unvisited nodes: " + unVisitedNodesAndDistances.Count);
 
                 //start with the currentNode, the node that has the smallest distance to the starting node.
-                int indexForCurrentNode = getIndexOfSmallestItem(unVisitedNodesAndDistances);
-                Console.WriteLine("Index for current node: " + indexForCurrentNode);
-                Vector2 currentNode = allNodes.ElementAt(indexForCurrentNode).Key;
+                int CurrentNodeIdentifier = getSmallestItem(unVisitedNodesAndDistances);
+                //Get the key for value currentNodeIdentifier
+                Vector2 currentNode = allNodes.FirstOrDefault(x => x.Value == CurrentNodeIdentifier).Key;
+                Console.WriteLine("Current node id, vector: " + CurrentNodeIdentifier + "," + currentNode);
 
-                //The following int can be seen as a pointer to the currentNode in the neighbourmatrix.
-                int currentNodeIdentifier = allNodes.ElementAt(indexForCurrentNode).Value;
-
-                //Remove the node we are looking at from the unvisited set.   
-                unVisitedNodesAndDistances.RemoveAt(currentNodeIdentifier);
-                Console.WriteLine("Starting node: " + currentNode);
                 
+                //Remove currentNode from unvisitedNodes
+                removeSmallestItem(unVisitedNodesAndDistances, CurrentNodeIdentifier);
+
+
                 //Create a list of neighbours containing ints, taken from the neighboursmatrix, pointing to values in allNodes
                 List<int> currentNodesNeighbours = new List<int>();
-                int[] row = neighBoursMatrix[currentNodeIdentifier];
+                int[] row = neighBoursMatrix[CurrentNodeIdentifier];
 
 
                 foreach (int neighBourIdentifier in row)
@@ -537,23 +557,32 @@ namespace EntryPoint
                     Vector2 neighbourVector = allNodes.FirstOrDefault(x => x.Value == neighBourIdentifier).Key;
                     int indexForNeighbour = allNodes[neighbourVector];  
 
-                    //EVALUATE the actual distance to the neighbours. Set Item2 of the tuple that has Item1==neighbouridentifier to the actual distance
-                    setActualDistanceOfNeighbour(unVisitedNodesAndDistances, neighBourIdentifier, Vector2.Distance(startingBuilding, neighbourVector)); 
-                    float neighBoursDistance = Vector2.Distance(startingBuilding, neighbourVector);
+
+
+
+
+                    float neighBoursDistance = actualDistances[neighBourIdentifier];
                     Console.WriteLine("Neighbour node: " + neighbourVector);
 
                     //Add the length from our currentNode to the start + the distance between currentNode and the neighbour
-                    float newPotentialPathLength = Vector2.Distance(startingBuilding, currentNode) + Vector2.Distance(currentNode, neighbourVector);
+                    float newPotentialPathLength = actualDistances[CurrentNodeIdentifier] + Vector2.Distance(currentNode, neighbourVector);
                     Console.WriteLine("Path length inc. neighbour: " + newPotentialPathLength + ", path at distancesToStartingNode: " + neighBoursDistance);
+
+                    //EVALUATE the actual distance to the neighbours. Set Item2 of the tuple that has Item1==neighbouridentifier to the actual distance
+                    setActualDistanceOfNeighbour
+                    (unVisitedNodesAndDistances, neighBourIdentifier, 
+                        Vector2.Distance(startingBuilding, neighbourVector)); 
+                    
+                    actualDistances[neighBourIdentifier] = Vector2.Distance(startingBuilding, neighbourVector);
 
                     //if the new path, including the detour through the neighbour is shorter than the direct distance between the neighbour and start,
                     //as contained within distancesToStartingNode, we should update the potentialpath.
                     if (newPotentialPathLength < neighBoursDistance)
                     {
                         Console.WriteLine("Found a beter path!");
-                        //find the neighbour we are currently looking at
-                        //get its value(an integer) and use that as the index for distances, where we will set the distance from that node to source to our new distance
-                        //Finally, we add the currentNode and its neighbour to the resultlist.                       
+                        actualDistances[neighBourIdentifier] = newPotentialPathLength;
+
+                        pred[neighBourIdentifier] = CurrentNodeIdentifier;                    
                     }
                 }
             }
@@ -561,6 +590,7 @@ namespace EntryPoint
 
             List<int> pred_results = new List<int>();
             pred_results.Add(allNodes[destinationBuilding]);
+
             pathcalc(pred, allNodes[startingBuilding], allNodes[destinationBuilding], pred_results);
 
             List<Vector2> vectors = new List<Vector2>();
